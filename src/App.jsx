@@ -3,6 +3,7 @@ import { ThemeProvider } from "./context/ThemeContext"
 
 import HomePage from "./pages/Homepage"
 import JournalPage from "./pages/Journalpage"
+import JournalDetailPage from "./pages/JournalDetailPage"
 import SettingsPage from "./pages/Settingpage"
 import LoginPage from "./pages/Loginpage"
 
@@ -22,6 +23,7 @@ function App() {
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/journals" element={<JournalPage />} />
+              <Route path="/journals/:id" element={<JournalDetailPage />} />
               <Route path="/settings" element={<SettingsPage />} />
               <Route path="/auth" element={<LoginPage />} />
 

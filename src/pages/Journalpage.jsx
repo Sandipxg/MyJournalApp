@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import JournalForm from "../components/JournalForm"
 import JournalList from "../components/JournalList"
+import ErrorBoundary from "../components/ErrorBoundary"
 
 function JournalPage() {
   const [journalList, setJournals] = useState(() => {
@@ -53,11 +54,13 @@ function JournalPage() {
         className="w-full mt-4 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
       />
       <div className="mt-6">
-        <JournalList
-          journals={filteredJournals}
-          deleteJournal={deleteJournal}
-          startEditing={startEditing}
-        />
+        <ErrorBoundary>
+          <JournalList
+            journals={filteredJournals}
+            deleteJournal={deleteJournal}
+            startEditing={startEditing}
+          />
+        </ErrorBoundary>
       </div>
     </div>
   )

@@ -28,7 +28,7 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 - ✅ useEffect
 - ✅ useRef
 - ✅ useReducer
-- 🔄 useContext (created, not fully wired up)
+- ✅ useContext
 - 🔄 Custom Hooks (usePosts done, needs more practice)
 
 ---
@@ -51,16 +51,16 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 ---
 
 ## 6. Styling
-- ⬜ CSS Modules
-- ⬜ Tailwind CSS
+- ✅ CSS Modules
+- ✅ Tailwind CSS
 - ⬜ Styled Components (optional)
 
 ---
 
 ## 7. Forms
 - ✅ Controlled Forms
-- ⬜ Form Validation
-- ⬜ React Hook Form
+- ✅ Form Validation
+- ✅ React Hook Form
 
 ---
 

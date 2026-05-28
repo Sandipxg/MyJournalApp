@@ -6,6 +6,7 @@ import JournalPage from "./pages/Journalpage"
 import JournalDetailPage from "./pages/JournalDetailPage"
 import SettingsPage from "./pages/Settingpage"
 import LoginPage from "./pages/Loginpage"
+import ProtectedRoute from "./components/ProtectedRoute"
 
 function App() {
   return (
@@ -22,9 +23,15 @@ function App() {
           <main className="max-w-3xl mx-auto px-4 py-8">
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/journals" element={<JournalPage />} />
-              <Route path="/journals/:id" element={<JournalDetailPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/journals" element={
+                <ProtectedRoute><JournalPage /></ProtectedRoute>
+              } />
+              <Route path="/journals/:id" element={
+                <ProtectedRoute><JournalDetailPage /></ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute><SettingsPage /></ProtectedRoute>
+              } />
               <Route path="/auth" element={<LoginPage />} />
 
             </Routes>

@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom"
 
-// isLoggedIn is hardcoded for now — swap with real auth later
-const isLoggedIn = false
+// Reads the mock auth flag — swap with real auth later
+const isLoggedIn = localStorage.getItem("isLoggedIn") === "true"
 
 function ProtectedRoute({ children }) {
   if (!isLoggedIn) {

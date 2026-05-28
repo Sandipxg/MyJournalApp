@@ -43,10 +43,10 @@ Legend: ✅ done · 🔄 in progress · ⬜ not started
 ## 5. Routing
 - ✅ React Router basics
 - ✅ Routes & Links
-- ⬜ Dynamic Routes
-- ⬜ Route Parameters
+- ✅ Dynamic Routes
+- ✅ Route Parameters
 - ⬜ Nested Routes
-- ⬜ Protected Routes
+- ✅ Protected Routes
 
 ---
 

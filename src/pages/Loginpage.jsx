@@ -8,6 +8,7 @@ function LoginPage() {
   const usernameValue = watch("username", "")
 
   function onSubmit(data) {
+    localStorage.setItem("isLoggedIn", "true")
     alert(`Welcome back ${data.username}!`)
     reset()
     navigate("/journals")

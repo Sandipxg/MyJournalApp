@@ -23,17 +23,17 @@ function JournalDetailPage() {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg px-6 py-8 shadow-sm">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-6 py-8 shadow-sm">
       <button
         onClick={() => navigate("/journals")}
-        className="text-sm text-purple-600 hover:underline mb-6 block"
+        className="text-sm text-purple-600 dark:text-purple-400 hover:underline mb-6 block"
       >
         ← Back to journals
       </button>
 
       <p className="text-xs text-gray-400 mb-1">#{entry.id}</p>
-      <h1 className="text-2xl font-bold text-gray-900 mb-4">{entry.title}</h1>
-      <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{entry.body}</p>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{entry.title}</h1>
+      <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{entry.body}</p>
     </div>
   )
 }

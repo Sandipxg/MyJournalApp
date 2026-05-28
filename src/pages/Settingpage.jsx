@@ -10,11 +10,11 @@ function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-6">Settings</h1>
-      <div className="bg-white border border-gray-200 rounded-lg px-6 py-5 shadow-sm flex items-center justify-between">
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Settings</h1>
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-6 py-5 shadow-sm flex items-center justify-between">
         <div>
-          <p className="font-medium text-gray-800">Theme</p>
-          <p className="text-sm text-gray-500">Current: {theme}</p>
+          <p className="font-medium text-gray-800 dark:text-gray-100">Theme</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Current: {theme}</p>
         </div>
         <button
           onClick={changeTheme}

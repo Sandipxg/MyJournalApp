@@ -1,4 +1,5 @@
 import { useEffect, useReducer } from "react"
+import { fetchPosts } from "../services/postService"
 
 const initialState = {
   posts: [],
@@ -24,8 +25,7 @@ function usePosts() {
       dispatch({ type: "FETCH_START" })
 
       try {
-        const response = await fetch("https://jsonplaceholder.typicode.com/posts")
-        const data = await response.json()
+        const data = await fetchPosts()
         dispatch({ type: "FETCH_SUCCESS", payload: data })
 
       } catch (error) {

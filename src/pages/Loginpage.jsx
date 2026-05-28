@@ -1,9 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
+import useQuote from '../hooks/useQuote'
 
 function LoginPage() {
   const navigate = useNavigate()
   const { register, handleSubmit, watch, reset, formState: { errors } } = useForm()
+  const { quote, loading } = useQuote()
 
   const usernameValue = watch("username", "")
 
@@ -18,7 +20,15 @@ function LoginPage() {
     <div className="min-h-[70vh] flex items-center justify-center">
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-8 w-full max-w-sm">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Welcome back</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Sign in to your account</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Sign in to your account</p>
+
+        {/* Daily quote */}
+        {!loading && quote && (
+          <div className="mb-6 border-l-2 border-purple-400 pl-3">
+            <p className="text-xs italic text-gray-500 dark:text-gray-400">"{quote.quote}"</p>
+            <p className="text-xs text-purple-500 mt-1">— {quote.author}</p>
+          </div>
+        )}
         {usernameValue && (
           <p className="text-xs text-purple-500 mb-4">Logging in as: {usernameValue}</p>
         )}

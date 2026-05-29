@@ -2,8 +2,11 @@ import { useState, useEffect } from "react"
 import JournalForm from "../components/JournalForm"
 import JournalList from "../components/JournalList"
 import ErrorBoundary from "../components/ErrorBoundary"
+import { useAuth } from "../context/AuthContext"
 
 function JournalPage() {
+  const { currentUser } = useAuth()
+
   const [journalList, setJournals] = useState(() => {
     const savedJournals = localStorage.getItem("journals")
     return savedJournals ? JSON.parse(savedJournals) : []
@@ -12,7 +15,7 @@ function JournalPage() {
   const [searchText, setSearchText] = useState("")
 
   function addJournal(newEntry) {
-    setJournals([...journalList, newEntry])
+    setJournals([...journalList, { ...newEntry, username: currentUser.username }])
   }
 
   function deleteJournal(id) {
@@ -30,9 +33,9 @@ function JournalPage() {
     setEditingJournal(null)
   }
 
-  const filteredJournals = journalList.filter((journal) =>
-    journal.title.toLowerCase().includes(searchText.toLowerCase())
-  )
+  const filteredJournals = journalList
+    .filter((journal) => journal.username === currentUser.username)
+    .filter((journal) => journal.title.toLowerCase().includes(searchText.toLowerCase()))
 
   useEffect(() => {
     localStorage.setItem("journals", JSON.stringify(journalList))

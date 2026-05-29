@@ -1,10 +1,10 @@
 import { Navigate } from "react-router-dom"
-
-// Reads the mock auth flag — swap with real auth later
-const isLoggedIn = localStorage.getItem("isLoggedIn") === "true"
+import { useAuth } from "../context/AuthContext"
 
 function ProtectedRoute({ children }) {
-  if (!isLoggedIn) {
+  const { currentUser } = useAuth()
+
+  if (!currentUser) {
     return <Navigate to="/auth" />
   }
 

@@ -1,36 +1,49 @@
-import { useForm } from 'react-hook-form'
-import { useNavigate } from 'react-router-dom'
-import useQuote from '../hooks/useQuote'
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { useNavigate } from "react-router-dom"
+import { useAuth } from "../context/AuthContext"
+import useQuote from "../hooks/useQuote"
 
 function LoginPage() {
+  const [isSignup, setIsSignup] = useState(false)
+  const [authError, setAuthError] = useState("")
+  const { signup, login } = useAuth()
   const navigate = useNavigate()
-  const { register, handleSubmit, watch, reset, formState: { errors } } = useForm()
   const { quote, loading } = useQuote()
 
-  const usernameValue = watch("username", "")
+  const { register, handleSubmit, reset, formState: { errors } } = useForm()
 
   function onSubmit(data) {
-    localStorage.setItem("isLoggedIn", "true")
-    alert(`Welcome back ${data.username}!`)
-    reset()
-    navigate("/journals")
+    setAuthError("")
+    try {
+      if (isSignup) {
+        signup(data.username, data.password)
+      } else {
+        login(data.username, data.password)
+      }
+      reset()
+      navigate("/journals")
+    } catch (err) {
+      setAuthError(err.message)
+    }
   }
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center">
       <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm p-8 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">Welcome back</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Sign in to your account</p>
 
-        {/* Daily quote */}
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+          {isSignup ? "Create account" : "Welcome back"}
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+          {isSignup ? "Sign up to get started" : "Sign in to your account"}
+        </p>
+
         {!loading && quote && (
           <div className="mb-6 border-l-2 border-purple-400 pl-3">
             <p className="text-xs italic text-gray-500 dark:text-gray-400">"{quote.quote}"</p>
             <p className="text-xs text-purple-500 mt-1">— {quote.author}</p>
           </div>
-        )}
-        {usernameValue && (
-          <p className="text-xs text-purple-500 mb-4">Logging in as: {usernameValue}</p>
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -59,13 +72,26 @@ function LoginPage() {
             {errors.password && <p className="text-red-500 text-xs">{errors.password.message}</p>}
           </div>
 
+          {authError && <p className="text-red-500 text-xs">{authError}</p>}
+
           <button
             type="submit"
             className="bg-purple-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors mt-2"
           >
-            Log In
+            {isSignup ? "Sign Up" : "Log In"}
           </button>
         </form>
+
+        <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-4">
+          {isSignup ? "Already have an account?" : "Don't have an account?"}
+          <button
+            onClick={() => { setIsSignup(!isSignup); setAuthError(""); reset() }}
+            className="text-purple-600 ml-1 hover:underline"
+          >
+            {isSignup ? "Log in" : "Sign up"}
+          </button>
+        </p>
+
       </div>
     </div>
   )

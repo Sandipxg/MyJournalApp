@@ -19,7 +19,9 @@ function JournalPage() {
   }
 
   function deleteJournal(id) {
-    setJournals(journalList.filter((journal) => journal.id !== id))
+    setJournals(journalList.filter((journal) =>
+      journal.id !== id || journal.username !== currentUser.username
+    ))
   }
 
   function startEditing(journal) {
@@ -28,7 +30,9 @@ function JournalPage() {
 
   function updateJournal(updatedJournal) {
     setJournals(journalList.map((journal) =>
-      journal.id === updatedJournal.id ? updatedJournal : journal
+      journal.id === updatedJournal.id && journal.username === currentUser.username
+        ? updatedJournal
+        : journal
     ))
     setEditingJournal(null)
   }

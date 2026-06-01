@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const AppError = require('../utils/AppError')
 
 const USERS_PATH = path.join(__dirname, '..', 'db', 'users.json')
 const JOURNALS_PATH = path.join(__dirname, '..', 'db', 'data.json')
@@ -12,7 +13,7 @@ function writeJournals(data) { fs.writeFileSync(JOURNALS_PATH, JSON.stringify(da
 function signup(username, password) {
   const users = readUsers()
   if (users.find(u => u.username === username)) {
-    throw new Error('Username already taken')
+    throw new AppError('Username already taken', 409)
   }
   const user = { id: Date.now(), username, password }
   users.push(user)
@@ -23,7 +24,7 @@ function signup(username, password) {
 function login(username, password) {
   const users = readUsers()
   const user = users.find(u => u.username === username && u.password === password)
-  if (!user) throw new Error('Invalid username or password')
+  if (!user) throw new AppError('Invalid username or password', 401)
   return { id: user.id, username: user.username }
 }
 
@@ -31,7 +32,7 @@ function deleteAccount(username, password) {
   const users = readUsers()
   const user = users.find(u => u.username === username && u.password === password)
   
-  if (!user) throw new Error('Invalid username or password')
+  if (!user) throw new AppError('Invalid username or password', 401)
 
   const updatedUsers = users.filter(u => u.id !== user.id)
   const updatedJournals = readJournals().filter(j => j.userId !== user.id)

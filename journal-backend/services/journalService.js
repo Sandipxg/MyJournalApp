@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const AppError = require('../utils/AppError')
 
 const JOURNALS_PATH = path.join(__dirname, '..', 'db', 'data.json')
 
@@ -12,7 +13,7 @@ function getByUser(userId) {
 
 function getById(id) {
   const journal = readJournals().find(j => j.id === id)
-  if (!journal) throw new Error('Journal not found')
+  if (!journal) throw new AppError('Journal not found', 404)
   return journal
 }
 
@@ -33,7 +34,7 @@ function create(userId, title, body = '') {
 function update(id, changes) {
   const journals = readJournals()
   const index = journals.findIndex(j => j.id === id)
-  if (index === -1) throw new Error('Journal not found')
+  if (index === -1) throw new AppError('Journal not found', 404)
 
   journals[index] = { ...journals[index], ...changes, id: journals[index].id, userId: journals[index].userId }
   writeJournals(journals)
@@ -43,7 +44,7 @@ function update(id, changes) {
 function remove(id) {
   const journals = readJournals()
   const index = journals.findIndex(j => j.id === id)
-  if (index === -1) throw new Error('Journal not found')
+  if (index === -1) throw new AppError('Journal not found', 404)
 
   journals.splice(index, 1)
   writeJournals(journals)

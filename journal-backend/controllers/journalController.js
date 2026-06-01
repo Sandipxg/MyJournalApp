@@ -1,46 +1,35 @@
 const journalService = require('../services/journalService')
+const AppError = require('../utils/AppError')
 
 function getByUser(req, res) {
   const userId = Number(req.query.userId)
   if (!userId) {
-    return res.status(400).json({ error: 'userId query param required' })
+    throw new AppError('userId query param required', 400)
   }
 
   res.json(journalService.getByUser(userId))
 }
 
 function getById(req, res) {
-  try {
-    res.json(journalService.getById(Number(req.params.id)))
-  } catch (err) {
-    res.status(404).json({ error: err.message })
-  }
+  res.json(journalService.getById(Number(req.params.id)))
 }
 
 function create(req, res) {
   const { userId, title, body } = req.body
   if (!userId || !title) {
-    return res.status(400).json({ error: 'userId and title required' })
+    throw new AppError('userId and title required', 400)
   }
 
   res.status(201).json(journalService.create(Number(userId), title, body))
 }
 
 function update(req, res) {
-  try {
-    res.json(journalService.update(Number(req.params.id), req.body))
-  } catch (err) {
-    res.status(404).json({ error: err.message })
-  }
+  res.json(journalService.update(Number(req.params.id), req.body))
 }
 
 function remove(req, res) {
-  try {
-    journalService.remove(Number(req.params.id))
-    res.json({ message: 'Deleted' })
-  } catch (err) {
-    res.status(404).json({ error: err.message })
-  }
+  journalService.remove(Number(req.params.id))
+  res.json({ message: 'Deleted' })
 }
 
 module.exports = { getByUser, getById, create, update, remove }

@@ -1,36 +1,45 @@
 import { createContext, useState, useContext } from "react"
 
+const BASE_URL = "http://localhost:3000/api/auth"
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem("currentUser")
-    return saved ? JSON.parse(saved) : null
+    if (!saved) return null
+    const parsed = JSON.parse(saved)
+    // old sessions from before the backend had no id — drop them
+    if (!parsed.id) {
+      localStorage.removeItem("currentUser")
+      return null
+    }
+    return parsed
   })
 
-  function signup(username, password) {
-    const users = JSON.parse(localStorage.getItem("users") || "[]")
+  async function signup(username, password) {
+    const res = await fetch(`${BASE_URL}/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error)
 
-    const exists = users.find((u) => u.username === username)
-    if (exists) throw new Error("Username already taken")
-
-    const newUser = { username, password }
-    localStorage.setItem("users", JSON.stringify([...users, newUser]))
-
-    const loggedIn = { username }
-    localStorage.setItem("currentUser", JSON.stringify(loggedIn))
-    setCurrentUser(loggedIn)
+    localStorage.setItem("currentUser", JSON.stringify(data))
+    setCurrentUser(data)
   }
 
-  function login(username, password) {
-    const users = JSON.parse(localStorage.getItem("users") || "[]")
+  async function login(username, password) {
+    const res = await fetch(`${BASE_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error)
 
-    const user = users.find((u) => u.username === username && u.password === password)
-    if (!user) throw new Error("Invalid username or password")
-
-    const loggedIn = { username }
-    localStorage.setItem("currentUser", JSON.stringify(loggedIn))
-    setCurrentUser(loggedIn)
+    localStorage.setItem("currentUser", JSON.stringify(data))
+    setCurrentUser(data)
   }
 
   function logout() {
@@ -38,8 +47,24 @@ export function AuthProvider({ children }) {
     setCurrentUser(null)
   }
 
+  async function deleteAccount(username, password) {
+  const res = await fetch(`${BASE_URL}/deleteaccount`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  })
+
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error)
+
+  localStorage.removeItem("currentUser")
+  setCurrentUser(null)
+
+  return data
+  }
+
   return (
-    <AuthContext.Provider value={{ currentUser, signup, login, logout }}>
+    <AuthContext.Provider value={{ currentUser, signup, login, logout , deleteAccount }}>
       {children}
     </AuthContext.Provider>
   )

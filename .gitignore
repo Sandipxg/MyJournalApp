@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local database
+journal-backend/db/users.json
+journal-backend/db/data.json

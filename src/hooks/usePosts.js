@@ -1,11 +1,7 @@
 import { useEffect, useReducer } from "react"
 import { fetchPosts } from "../services/postService"
 
-const initialState = {
-  posts: [],
-  loading: true,
-  error: null
-}
+const initialState = { posts: [], loading: true, error: null }
 
 function reducer(state, action) {
   if (action.type === "FETCH_START")   return { ...state, loading: true }
@@ -15,27 +11,19 @@ function reducer(state, action) {
 }
 
 function usePosts() {
-
   const [state, dispatch] = useReducer(reducer, initialState)
 
   useEffect(() => {
-
-    async function fetchPosts() {
-
+    async function load() {
       dispatch({ type: "FETCH_START" })
-
       try {
         const data = await fetchPosts()
         dispatch({ type: "FETCH_SUCCESS", payload: data })
-
-      } catch (error) {
+      } catch {
         dispatch({ type: "FETCH_ERROR", payload: "Failed to fetch posts" })
       }
-
     }
-
-    fetchPosts()
-
+    load()
   }, [])
 
   return state

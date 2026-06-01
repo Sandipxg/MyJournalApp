@@ -25,7 +25,7 @@ function JournalForm({ addJournal, editingJournal, updateJournal }) {
     if (editingJournal) {
       updateJournal({ ...editingJournal, title })
     } else {
-      addJournal({ id: Date.now(), title })
+      addJournal({ title })
     }
     setTitle("")
   }

@@ -1,7 +1,8 @@
-const BASE_URL = "https://jsonplaceholder.typicode.com"
+// Used by Homepage to show a public posts feed
+const PLACEHOLDER_URL = "https://jsonplaceholder.typicode.com"
 
 export async function fetchPosts() {
-  const response = await fetch(`${BASE_URL}/posts`)
-  if (!response.ok) throw new Error("Failed to fetch posts")
-  return response.json()
+  const res = await fetch(`${PLACEHOLDER_URL}/posts`)
+  if (!res.ok) throw new Error("Failed to fetch posts")
+  return res.json()
 }

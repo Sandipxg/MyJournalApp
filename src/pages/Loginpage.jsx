@@ -13,13 +13,13 @@ function LoginPage() {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm()
 
-  function onSubmit(data) {
+  async function onSubmit(data) {
     setAuthError("")
     try {
       if (isSignup) {
-        signup(data.username, data.password)
+        await signup(data.username, data.password)
       } else {
-        login(data.username, data.password)
+        await login(data.username, data.password)
       }
       reset()
       navigate("/journals")

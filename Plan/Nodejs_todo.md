@@ -28,7 +28,7 @@ Use this file to track progress topic by topic.
 - [x] Create `utils` folder
 - [ ] Create `config` folder
 - [ ] Create `models` folder
-- [ ] Split `server.js` and `app.js`
+- [x] Split `server.js` and `app.js`
 
 ## 4. Node.js Module System
 

@@ -1,34 +1,38 @@
 const journalService = require('../services/journalService')
 const AppError = require('../utils/AppError')
 
-function getByUser(req, res) {
+async function getByUser(req, res) {
   const userId = Number(req.query.userId)
   if (!userId) {
     throw new AppError('userId query param required', 400)
   }
 
-  res.json(journalService.getByUser(userId))
+  const journals = await journalService.getByUser(userId)
+  res.json(journals)
 }
 
-function getById(req, res) {
-  res.json(journalService.getById(Number(req.params.id)))
+async function getById(req, res) {
+  const journal = await journalService.getById(Number(req.params.id))
+  res.json(journal)
 }
 
-function create(req, res) {
+async function create(req, res) {
   const { userId, title, body } = req.body
   if (!userId || !title) {
     throw new AppError('userId and title required', 400)
   }
 
-  res.status(201).json(journalService.create(Number(userId), title, body))
+  const journal = await journalService.create(Number(userId), title, body)
+  res.status(201).json(journal)
 }
 
-function update(req, res) {
-  res.json(journalService.update(Number(req.params.id), req.body))
+async function update(req, res) {
+  const journal = await journalService.update(Number(req.params.id), req.body)
+  res.json(journal)
 }
 
-function remove(req, res) {
-  journalService.remove(Number(req.params.id))
+async function remove(req, res) {
+  await journalService.remove(Number(req.params.id))
   res.json({ message: 'Deleted' })
 }
 

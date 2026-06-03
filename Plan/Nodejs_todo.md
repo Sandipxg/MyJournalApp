@@ -19,7 +19,7 @@ Use this file to track progress topic by topic.
 - [x] Keep routes focused only on URL mapping
 - [x] Keep controllers focused on request/response
 - [x] Keep services focused on business logic
-- [ ] Understand model concept
+- [x] Understand model concept
 
 ## 3. Project Structure
 
@@ -27,29 +27,29 @@ Use this file to track progress topic by topic.
 - [x] Create `middleware` folder
 - [x] Create `utils` folder
 - [ ] Create `config` folder
-- [ ] Create `models` folder
+- [x] Create `models` folder
 - [x] Split `server.js` and `app.js`
 
 ## 4. Node.js Module System
 
-- [ ] Understand `require(...)`
-- [ ] Understand `module.exports`
-- [ ] Understand `./` relative path
-- [ ] Understand `../` relative path
-- [ ] Understand `__dirname`
-- [ ] Understand `path.join(...)`
-- [ ] Understand CommonJS vs ES Modules basics
+- [x] Understand `require(...)`
+- [x] Understand `module.exports`
+- [x] Understand `./` relative path
+- [x] Understand `../` relative path
+- [x] Understand `__dirname`
+- [x] Understand `path.join(...)`
+- [x] Understand CommonJS vs ES Modules basics
 
 ## 5. Async/Await
 
 - [ ] Learn callbacks
 - [ ] Learn promises
-- [ ] Learn async/await
-- [ ] Learn `fs.promises.readFile`
-- [ ] Learn `fs.promises.writeFile`
-- [ ] Convert `authService.js` to async/await
-- [ ] Convert `journalService.js` to async/await
-- [ ] Update controllers/routes to handle async service functions
+- [x] Learn async/await
+- [x] Learn `fs.promises.readFile`
+- [x] Learn `fs.promises.writeFile`
+- [x] Convert `authService.js` to async/await
+- [x] Convert `journalService.js` to async/await
+- [x] Update controllers/routes to handle async service functions
 
 ## 6. Event Loop Basics
 

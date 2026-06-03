@@ -1,23 +1,23 @@
 const journalModel = require('../models/journalModel')
 
-function getByUser(userId) {
-  return journalModel.getByUser(userId)
+async function getByUser(userId) {
+  return await journalModel.getByUser(userId)
 }
 
-function getById(id) {
-  return journalModel.getById(id)
+async function getById(id) {
+  return await journalModel.getById(id)
 }
 
-function create(userId, title, body = '') {
-  return journalModel.create(userId, title, body)
+async function create(userId, title, body = '') {
+  return await journalModel.create(userId, title, body)
 }
 
-function update(id, changes) {
-  return journalModel.update(id, changes)
+async function update(id, changes) {
+  return await journalModel.update(id, changes)
 }
 
-function remove(id) {
-  return journalModel.remove(id)
+async function remove(id) {
+  return await journalModel.remove(id)
 }
 
 module.exports = { getByUser, getById, create, update, remove }

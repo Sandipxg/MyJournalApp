@@ -1,53 +1,23 @@
-const fs = require('fs')
-const path = require('path')
-const AppError = require('../utils/AppError')
-
-const JOURNALS_PATH = path.join(__dirname, '..', 'db', 'data.json')
-
-function readJournals()      { return JSON.parse(fs.readFileSync(JOURNALS_PATH, 'utf-8')) }
-function writeJournals(data) { fs.writeFileSync(JOURNALS_PATH, JSON.stringify(data, null, 2)) }
+const journalModel = require('../models/journalModel')
 
 function getByUser(userId) {
-  return readJournals().filter(j => j.userId === userId)
+  return journalModel.getByUser(userId)
 }
 
 function getById(id) {
-  const journal = readJournals().find(j => j.id === id)
-  if (!journal) throw new AppError('Journal not found', 404)
-  return journal
+  return journalModel.getById(id)
 }
 
 function create(userId, title, body = '') {
-  const journals = readJournals()
-  const journal = {
-    id: Date.now(),
-    userId,
-    title,
-    body,
-    date: new Date().toISOString().split('T')[0],
-  }
-  journals.push(journal)
-  writeJournals(journals)
-  return journal
+  return journalModel.create(userId, title, body)
 }
 
 function update(id, changes) {
-  const journals = readJournals()
-  const index = journals.findIndex(j => j.id === id)
-  if (index === -1) throw new AppError('Journal not found', 404)
-
-  journals[index] = { ...journals[index], ...changes, id: journals[index].id, userId: journals[index].userId }
-  writeJournals(journals)
-  return journals[index]
+  return journalModel.update(id, changes)
 }
 
 function remove(id) {
-  const journals = readJournals()
-  const index = journals.findIndex(j => j.id === id)
-  if (index === -1) throw new AppError('Journal not found', 404)
-
-  journals.splice(index, 1)
-  writeJournals(journals)
+  return journalModel.remove(id)
 }
 
 module.exports = { getByUser, getById, create, update, remove }

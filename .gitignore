@@ -26,3 +26,6 @@ dist-ssr
 # Local database
 journal-backend/db/users.json
 journal-backend/db/data.json
+
+# Local environment
+journal-backend/.env

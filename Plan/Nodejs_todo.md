@@ -51,18 +51,12 @@ Use this file to track progress topic by topic.
 - [x] Convert `journalService.js` to async/await
 - [x] Update controllers/routes to handle async service functions
 
-## 6. Event Loop Basics
-
-- [ ] Understand why Node can handle many requests
-- [ ] Understand non-blocking code
-- [ ] Understand why `readFileSync()` is bad in servers
-- [ ] Understand why `await` does not freeze the whole server
 
 ## 7. Environment Variables
 
-- [ ] Create `.env`
-- [ ] Use `dotenv`
-- [ ] Move `PORT` to `.env`
+- [x] Create `.env`
+- [x] Use `dotenv`
+- [x] Move `PORT` to `.env`
 - [ ] Add `JWT_SECRET` later
 - [ ] Add database URL later
 

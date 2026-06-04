@@ -8,8 +8,8 @@ async function getById(id) {
   return await journalModel.getById(id)
 }
 
-async function create(userId, title, body = '') {
-  return await journalModel.create(userId, title, body)
+async function create(userId, title) {
+  return await journalModel.create(userId, title)
 }
 
 async function update(id, changes) {

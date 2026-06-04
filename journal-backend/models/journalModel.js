@@ -1,67 +1,89 @@
-const fs = require('fs/promises')
-const path = require('path')
+const mongoose = require('mongoose')
 const AppError = require('../utils/AppError')
 
-const JOURNALS_PATH = path.join(__dirname, '..', 'db', 'data.json')
+const journalSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    date: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+)
 
-async function readAll() {
-  const data = await fs.readFile(JOURNALS_PATH, 'utf-8')
-  return JSON.parse(data)
+const Journal = mongoose.model('Journal', journalSchema)
+
+function assertValidJournalId(id) {
+  if (!mongoose.isValidObjectId(id)) {
+    throw new AppError('Journal not found', 404)
+  }
 }
 
-async function writeAll(journals) {
-  await fs.writeFile(JOURNALS_PATH, JSON.stringify(journals, null, 2))
+function toClientJournal(journal) {
+  if (!journal) return null
+  return {
+    id: journal._id.toString(),
+    userId: journal.userId,
+    title: journal.title,
+    date: journal.date,
+  }
 }
 
 async function getByUser(userId) {
-  const journals = await readAll()
-  return journals.filter(j => j.userId === userId)
+  const journals = await Journal.find({ userId }).sort({ createdAt: -1 })
+  return journals.map(toClientJournal)
 }
 
 async function getById(id) {
-  const journals = await readAll()
-  const journal = journals.find(j => j.id === id)
+  assertValidJournalId(id)
+  const journal = await Journal.findById(id)
   if (!journal) throw new AppError('Journal not found', 404)
-  return journal
+  return toClientJournal(journal)
 }
 
-async function create(userId, title, body = '') {
-  const journals = await readAll()
-  const journal = {
-    id: Date.now(),
+async function create(userId, title) {
+  const journal = await Journal.create({
     userId,
     title,
-    body,
     date: new Date().toISOString().split('T')[0],
-  }
-  journals.push(journal)
-  await writeAll(journals)
-  return journal
+  })
+  return toClientJournal(journal)
 }
 
 async function update(id, changes) {
-  const journals = await readAll()
-  const index = journals.findIndex(j => j.id === id)
-  if (index === -1) throw new AppError('Journal not found', 404)
+  assertValidJournalId(id)
+  const allowedChanges = {}
+  if (changes.title !== undefined) allowedChanges.title = changes.title
 
-  journals[index] = { ...journals[index], ...changes, id: journals[index].id, userId: journals[index].userId }
-  await writeAll(journals)
-  return journals[index]
+  const journal = await Journal.findByIdAndUpdate(id, allowedChanges, {
+    new: true,
+    runValidators: true,
+  })
+  if (!journal) throw new AppError('Journal not found', 404)
+
+  return toClientJournal(journal)
 }
 
 async function remove(id) {
-  const journals = await readAll()
-  const index = journals.findIndex(j => j.id === id)
-  if (index === -1) throw new AppError('Journal not found', 404)
-
-  journals.splice(index, 1)
-  await writeAll(journals)
+  assertValidJournalId(id)
+  const journal = await Journal.findByIdAndDelete(id)
+  if (!journal) throw new AppError('Journal not found', 404)
 }
 
 async function removeByUser(userId) {
-  const journals = await readAll()
-  const updated = journals.filter(j => j.userId !== userId)
-  await writeAll(updated)
+  await Journal.deleteMany({ userId })
 }
 
 module.exports = { getByUser, getById, create, update, remove, removeByUser }

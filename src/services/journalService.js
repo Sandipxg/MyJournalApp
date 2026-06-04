@@ -12,11 +12,11 @@ export async function fetchJournal(id) {
   return res.json()
 }
 
-export async function createJournal(userId, title, body = "") {
+export async function createJournal(userId, title) {
   const res = await fetch(BASE_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId, title, body }),
+    body: JSON.stringify({ userId, title }),
   })
   if (!res.ok) throw new Error("Failed to create journal")
   return res.json()

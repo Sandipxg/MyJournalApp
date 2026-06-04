@@ -1,39 +1,50 @@
-const fs = require('fs/promises')
-const path = require('path')
+const mongoose = require('mongoose')
 
-const USERS_PATH = path.join(__dirname, '..', 'db', 'users.json')
+const userSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+)
 
-async function readAll() {
-  const data = await fs.readFile(USERS_PATH, 'utf-8')
-  return JSON.parse(data)
-}
+const User = mongoose.model('User', userSchema)
 
-async function writeAll(users) {
-  await fs.writeFile(USERS_PATH, JSON.stringify(users, null, 2))
+function toClientUser(user) {
+  if (!user) return null
+  return {
+    id: user._id.toString(),
+    username: user.username,
+  }
 }
 
 async function findByUsername(username) {
-  const users = await readAll()
-  return users.find(u => u.username === username)
+  const user = await User.findOne({ username })
+  return toClientUser(user)
 }
 
 async function findByCredentials(username, password) {
-  const users = await readAll()
-  return users.find(u => u.username === username && u.password === password)
+  const user = await User.findOne({ username, password })
+  return toClientUser(user)
 }
 
 async function create(username, password) {
-  const users = await readAll()
-  const user = { id: Date.now(), username, password }
-  users.push(user)
-  await writeAll(users)
-  return user
+  const user = await User.create({ username, password })
+  return toClientUser(user)
 }
 
 async function removeById(userId) {
-  const users = await readAll()
-  const updated = users.filter(u => u.id !== userId)
-  await writeAll(updated)
+  await User.findByIdAndDelete(userId)
 }
 
 module.exports = { findByUsername, findByCredentials, create, removeById }

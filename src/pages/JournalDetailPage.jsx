@@ -35,7 +35,6 @@ function JournalDetailPage() {
       </button>
       <p className="text-xs text-gray-400 mb-1">#{entry.id}</p>
       <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{entry.title}</h1>
-      <p className="text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap">{entry.body}</p>
     </div>
   )
 }

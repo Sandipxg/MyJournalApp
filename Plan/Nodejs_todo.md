@@ -62,21 +62,21 @@ Use this file to track progress topic by topic.
 
 ## 8. MongoDB + Mongoose
 
-- [ ] Learn why JSON files are not enough for real apps
-- [ ] Learn MongoDB basics
-- [ ] Learn Mongoose basics
-- [ ] Create `User` model
-- [ ] Create `Journal` model
-- [ ] Replace `users.json`
-- [ ] Replace `data.json`
-- [ ] Connect database using `.env`
+- [x] Learn why JSON files are not enough for real apps
+- [x] Learn MongoDB basics
+- [x] Learn Mongoose basics
+- [x] Create `User` model
+- [x] Create `Journal` model
+- [x] Replace `users.json`
+- [x] Replace `data.json`
+- [x] Connect database using `.env`
 
 ## 9. Database Design Basics
 
-- [ ] Understand one-to-many relationships
-- [ ] Understand User -> Journals relationship
-- [ ] Understand referencing IDs
-- [ ] Understand when to embed vs reference
+- [x] Understand one-to-many relationships
+- [x] Understand User -> Journals relationship
+- [x] Understand referencing IDs
+- [x] Understand when to embed vs reference
 
 ## 10. Authentication
 

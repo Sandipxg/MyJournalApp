@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const helmet = require('helmet')
 const swaggerUi = require('swagger-ui-express')
 const swaggerDocument = require('./swagger/swagger.json')
 
@@ -9,6 +10,8 @@ const { notFound, errorHandler } = require('./middleware/errorHandler')
 
 const app = express()
 
+// Security headers — must be first
+app.use(helmet())
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
 app.use(express.json())
 const cookieParser = require('cookie-parser')

@@ -121,7 +121,7 @@ Use this file to track progress topic by topic.
 - [x] Validate all input
 - [ ] Learn CORS basics
 - [ ] Learn rate limiting
-- [ ] Learn `helmet`
+- [x] Learn `helmet`
 - [ ] Avoid leaking internal errors
 
 ## 15. API Testing

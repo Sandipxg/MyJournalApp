@@ -99,12 +99,12 @@ Use this file to track progress topic by topic.
 
 ## 12. Validation
 
-- [ ] Learn schema validation
-- [ ] Choose validation library
-- [ ] Validate signup input
-- [ ] Validate login input
-- [ ] Validate journal input
-- [ ] Return clean validation errors
+- [x] Learn schema validation
+- [x] Choose validation library
+- [x] Validate signup input
+- [x] Validate login input
+- [x] Validate journal input
+- [x] Return clean validation errors
 
 ## 13. Security Basics
 

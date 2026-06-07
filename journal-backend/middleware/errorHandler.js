@@ -6,7 +6,12 @@ function errorHandler(err, req, res, next) {
   const statusCode = err.statusCode || 500
   const message = err.message || 'Something went wrong'
 
-  res.status(statusCode).json({ error: message })
+  const response = { error: message }
+  if (err.details) {
+    response.details = err.details
+  }
+
+  res.status(statusCode).json(response)
 }
 
 module.exports = { notFound, errorHandler }

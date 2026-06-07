@@ -78,7 +78,14 @@ Use this file to track progress topic by topic.
 - [x] Understand referencing IDs
 - [x] Understand when to embed vs reference
 
-## 10. Authentication
+## 10. Cookies vs JWT
+
+- [ ] Understand cookie/session auth
+- [ ] Understand token-based auth
+- [ ] Understand where JWT can be stored
+- [ ] Understand basic pros and cons
+
+## 11. Authentication
 
 - [x] Learn password hashing
 - [x] Install and use `bcrypt`
@@ -89,13 +96,6 @@ Use this file to track progress topic by topic.
 - [x] Create auth middleware
 - [x] Protect journal routes
 - [x] Stop trusting `userId` from frontend
-
-## 11. Cookies vs JWT
-
-- [ ] Understand cookie/session auth
-- [ ] Understand token-based auth
-- [ ] Understand where JWT can be stored
-- [ ] Understand basic pros and cons
 
 ## 12. Validation
 

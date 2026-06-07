@@ -17,6 +17,7 @@
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.76.1",
     "react-router-dom": "^7.15.1",
+    "swagger-ui-express": "^5.0.1",
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
@@ -28,6 +29,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "swagger-autogen": "^2.23.7",
     "vite": "^8.0.12"
   }
 }

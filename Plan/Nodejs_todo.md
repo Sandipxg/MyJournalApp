@@ -26,7 +26,7 @@ Use this file to track progress topic by topic.
 - [x] Create `controllers` folder
 - [x] Create `middleware` folder
 - [x] Create `utils` folder
-- [ ] Create `config` folder
+- [x] Create `config` folder
 - [x] Create `models` folder
 - [x] Split `server.js` and `app.js`
 
@@ -42,8 +42,8 @@ Use this file to track progress topic by topic.
 
 ## 5. Async/Await
 
-- [ ] Learn callbacks
-- [ ] Learn promises
+- [x] Learn callbacks
+- [x] Learn promises
 - [x] Learn async/await
 - [x] Learn `fs.promises.readFile`
 - [x] Learn `fs.promises.writeFile`
@@ -58,7 +58,7 @@ Use this file to track progress topic by topic.
 - [x] Use `dotenv`
 - [x] Move `PORT` to `.env`
 - [ ] Add `JWT_SECRET` later
-- [ ] Add database URL later
+- [x] Add database URL later
 
 ## 8. MongoDB + Mongoose
 
@@ -80,10 +80,10 @@ Use this file to track progress topic by topic.
 
 ## 10. Cookies vs JWT
 
-- [ ] Understand cookie/session auth
-- [ ] Understand token-based auth
-- [ ] Understand where JWT can be stored
-- [ ] Understand basic pros and cons
+- [x] Understand cookie/session auth
+- [x] Understand token-based auth
+- [x] Understand where JWT can be stored
+- [x] Understand basic pros and cons
 
 ## 11. Authentication
 
@@ -106,16 +106,25 @@ Use this file to track progress topic by topic.
 - [x] Validate journal input
 - [x] Return clean validation errors
 
-## 13. Security Basics
+## 13. API Documentation
 
-- [ ] Never store plain passwords
-- [ ] Validate all input
+- [x] Create simple API docs markdown file
+- [x] Document auth endpoints
+- [x] Document journal endpoints
+- [x] Add request body examples
+- [x] Add response examples
+- [x] Add status codes
+
+## 14. Security Basics
+
+- [x] Never store plain passwords
+- [x] Validate all input
 - [ ] Learn CORS basics
 - [ ] Learn rate limiting
 - [ ] Learn `helmet`
 - [ ] Avoid leaking internal errors
 
-## 14. API Testing
+## 15. API Testing
 
 - [ ] Test APIs with Postman or Thunder Client
 - [ ] Test signup
@@ -126,14 +135,6 @@ Use this file to track progress topic by topic.
 - [ ] Test update journal
 - [ ] Test delete journal
 
-## 15. API Documentation
-
-- [ ] Create simple API docs markdown file
-- [ ] Document auth endpoints
-- [ ] Document journal endpoints
-- [ ] Add request body examples
-- [ ] Add response examples
-- [ ] Add status codes
 
 ## 16. Logging Basics
 

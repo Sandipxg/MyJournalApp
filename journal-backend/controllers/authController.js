@@ -9,6 +9,9 @@ async function signup(req, res) {
   }
 
   const user = await authService.signup(username, password)
+  // Sign and set the JWT cookie so the user is auto-logged in upon signup
+  const token = sign({ userId: user.id })
+  res.cookie('jwt', token, { httpOnly: true, sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 })
   res.status(201).json(user)
 }
 

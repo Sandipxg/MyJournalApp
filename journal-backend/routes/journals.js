@@ -1,7 +1,11 @@
 const express = require('express')
 const journalController = require('../controllers/journalController')
 
+const auth = require('../middleware/auth')
+
 const router = express.Router()
+
+router.use(auth)
 
 router.get('/', journalController.getByUser)
 router.get('/:id', journalController.getById)

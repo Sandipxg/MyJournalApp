@@ -80,15 +80,15 @@ Use this file to track progress topic by topic.
 
 ## 10. Authentication
 
-- [ ] Learn password hashing
-- [ ] Install and use `bcrypt`
-- [ ] Hash password during signup
-- [ ] Compare hashed password during login
-- [ ] Learn JWT basics
-- [ ] Return JWT after login
-- [ ] Create auth middleware
-- [ ] Protect journal routes
-- [ ] Stop trusting `userId` from frontend
+- [x] Learn password hashing
+- [x] Install and use `bcrypt`
+- [x] Hash password during signup
+- [x] Compare hashed password during login
+- [x] Learn JWT basics
+- [x] Return JWT after login
+- [x] Create auth middleware
+- [x] Protect journal routes
+- [x] Stop trusting `userId` from frontend
 
 ## 11. Cookies vs JWT
 

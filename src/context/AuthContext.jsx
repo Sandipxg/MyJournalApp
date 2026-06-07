@@ -21,6 +21,7 @@ export function AuthProvider({ children }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
+      credentials: "include",
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error)
@@ -34,33 +35,45 @@ export function AuthProvider({ children }) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
+      credentials: "include",
     })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error)
 
-    localStorage.setItem("currentUser", JSON.stringify(data))
-    setCurrentUser(data)
+    // Store only the user object for consistency with signup
+    const userToSave = data.user
+    localStorage.setItem("currentUser", JSON.stringify(userToSave))
+    setCurrentUser(userToSave)
   }
 
-  function logout() {
+  async function logout() {
+    try {
+      await fetch(`${BASE_URL}/logout`, {
+        method: "POST",
+        credentials: "include",
+      })
+    } catch (err) {
+      console.error("Failed to call logout on backend:", err)
+    }
     localStorage.removeItem("currentUser")
     setCurrentUser(null)
   }
 
   async function deleteAccount(username, password) {
-  const res = await fetch(`${BASE_URL}/deleteaccount`, {
-    method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  })
+    const res = await fetch(`${BASE_URL}/deleteaccount`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+      credentials: "include",
+    })
 
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.error)
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error)
 
-  localStorage.removeItem("currentUser")
-  setCurrentUser(null)
+    localStorage.removeItem("currentUser")
+    setCurrentUser(null)
 
-  return data
+    return data
   }
 
   return (

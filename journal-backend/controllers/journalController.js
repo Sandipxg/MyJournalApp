@@ -2,24 +2,24 @@ const journalService = require('../services/journalService')
 const AppError = require('../utils/AppError')
 
 async function getByUser(req, res) {
-  const userId = req.query.userId
-  if (!userId) {
-    throw new AppError('userId query param required', 400)
-  }
-
+  const userId = req.userId
   const journals = await journalService.getByUser(userId)
   res.json(journals)
 }
 
 async function getById(req, res) {
   const journal = await journalService.getById(req.params.id)
+  if (journal.userId !== req.userId) {
+    throw new AppError('Unauthorized access to this journal', 403)
+  }
   res.json(journal)
 }
 
 async function create(req, res) {
-  const { userId, title } = req.body
-  if (!userId || !title) {
-    throw new AppError('userId and title required', 400)
+  const { title } = req.body
+  const userId = req.userId
+  if (!title) {
+    throw new AppError('title required', 400)
   }
 
   const journal = await journalService.create(userId, title)
@@ -27,11 +27,21 @@ async function create(req, res) {
 }
 
 async function update(req, res) {
-  const journal = await journalService.update(req.params.id, req.body)
-  res.json(journal)
+  const journal = await journalService.getById(req.params.id)
+  if (journal.userId !== req.userId) {
+    throw new AppError('Unauthorized to update this journal', 403)
+  }
+
+  const updated = await journalService.update(req.params.id, req.body)
+  res.json(updated)
 }
 
 async function remove(req, res) {
+  const journal = await journalService.getById(req.params.id)
+  if (journal.userId !== req.userId) {
+    throw new AppError('Unauthorized to delete this journal', 403)
+  }
+
   await journalService.remove(req.params.id)
   res.json({ message: 'Deleted' })
 }

@@ -1,4 +1,4 @@
-const { verifyToken } = require('../services/jwtService')
+const { verify } = require('../services/jwtService')
 const AppError = require('../utils/AppError')
 
 /**
@@ -6,14 +6,21 @@ const AppError = require('../utils/AppError')
  * `req.userId` for downstream handlers.
  */
 function auth(req, res, next) {
-  const authHeader = req.headers.authorization
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return next(new AppError('Missing or malformed Authorization header', 401))
+  let token = req.cookies?.jwt
+
+  if (!token) {
+    const authHeader = req.headers.authorization
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1]
+    }
   }
 
-  const token = authHeader.split(' ')[1]
+  if (!token) {
+    return next(new AppError('Missing or malformed token', 401))
+  }
+
   try {
-    const payload = verifyToken(token)
+    const payload = verify(token)
     // payload is whatever we signed; we expect { userId }
     req.userId = payload.userId
     next()

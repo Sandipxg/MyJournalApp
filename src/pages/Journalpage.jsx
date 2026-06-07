@@ -13,14 +13,14 @@ function JournalPage() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetchJournals(currentUser.id)
+    fetchJournals()
       .then(setJournals)
       .catch(err => setError(err.message))
-  }, [currentUser.id])
+  }, [])
 
   async function addJournal(newEntry) {
     try {
-      const created = await createJournal(currentUser.id, newEntry.title)
+      const created = await createJournal(newEntry.title)
       setJournals(prev => [...prev, created])
     } catch (err) {
       setError(err.message)

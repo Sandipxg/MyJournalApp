@@ -1,74 +1,111 @@
 # MyJournalApp
 
-A personal journal web app built with React as a hands-on learning project. Covers core React concepts including routing, context, custom hooks, protected routes, dark mode, and a mock auth system.
+A personal journal web app built with React (frontend) and Node.js/Express (backend). It features routing, context state management, dark mode, rate limiting, and full PWA offline support.
 
-## Features
+---
 
-- Signup & Login with per-user session (stored in localStorage)
-- Protected routes — journals and settings require authentication
-- Create, edit, delete journal entries (per-user ownership enforced)
-- Search journals by title
-- Dark / Light mode toggle
-- Motivational quote on the login page (fetched from external API)
-- Error boundaries around the journal list
+## Project Setup & Running Locally
+
+The project is split into the main directory (React Frontend) and `journal-backend/` (Express API server).
+
+### 1. Backend Setup
+
+1. Navigate to the backend folder:
+   ```bash
+   cd journal-backend
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file inside `journal-backend/` (copy from template if available):
+   ```env
+   PORT=3000
+   MONGO_URI=mongodb://localhost:27017/myjournal
+   JWT_SECRET=your_jwt_secret_key_here
+   ```
+4. Run the development server (auto-reloads on file changes):
+   ```bash
+   npm run dev
+   ```
+
+#### Swagger API Docs Documentation
+The backend uses `swagger-ui-express` and `swagger-autogen` to generate interactive documentation.
+* **Access interactive docs:** Run the backend server and visit [http://localhost:3000/api-docs](http://localhost:3000/api-docs).
+* **Regenerate Swagger JSON:** If you modify API endpoints/routes, regenerate the schema file with:
+  ```bash
+  npm run swagger
+  ```
+
+---
+
+### 2. Frontend Setup
+
+1. From the project root folder, install dependencies:
+   ```bash
+   npm install
+   ```
+2. Start the Vite development server:
+   ```bash
+   npm run dev
+   ```
+3. Visit the frontend application at [http://localhost:5173/](http://localhost:5173/).
+
+---
+
+## Progressive Web App (PWA) Offline Integration
+
+This application is fully PWA-ready, offering standalone application installation and complete offline caching of resources.
+
+### Important: Modifying Cached Assets & Manual Updates
+The PWA uses a custom, manual Service Worker implementation located in `public/sw.js`. 
+
+> [!WARNING]
+> Because static assets are cached using a **Cache-First** strategy, browsers will serve the older cached versions of files (HTML, CSS, JS, icons) until the service worker is updated.
+> 
+> **Whenever you update any front-end assets, app source files, or logos:**
+> You must manually increment the version tag in `public/sw.js` (e.g. from `'journal-cache-v1'` to `'journal-cache-v2'`).
+> This triggers the browser to update the worker, cache the new files, and clean up the old cache version on the next load.
+
+```javascript
+// public/sw.js
+const CACHE_NAME = 'journal-cache-v2'; // Increment this whenever assets change!
+```
+
+---
 
 ## Tech Stack
 
-- React 19
-- React Router v7
-- Tailwind CSS v4
-- React Hook Form
-- Vite
+### Frontend
+- **Framework:** React 19 (Vite)
+- **Routing:** React Router v7
+- **Styling:** Tailwind CSS v4
+- **State Management:** React Context API & hooks
+
+### Backend
+- **Server:** Node.js + Express
+- **Database:** MongoDB (Mongoose ORM)
+- **Security:** Helmet, CORS, Cookie Parser
+- **Rate Limiting:** IP-based strict limits for auth routes, global limits for other routes
+- **Documentation:** Swagger (OpenAPI)
+
+---
 
 ## Project Structure
 
 ```
-src/
-├── components/        # Reusable UI components
-│   ├── ErrorBoundary.jsx
-│   ├── JournalCard.jsx
-│   ├── JournalForm.jsx
-│   ├── JournalList.jsx
-│   └── ProtectedRoute.jsx
-├── context/           # Global state
-│   ├── AuthContext.jsx
-│   └── ThemeContext.jsx
-├── hooks/             # Custom hooks
-│   ├── usePosts.js
-│   └── useQuote.js
-├── pages/             # Route-level components
-│   ├── Homepage.jsx
-│   ├── JournalDetailPage.jsx
-│   ├── Journalpage.jsx
-│   ├── Loginpage.jsx
-│   └── Settingpage.jsx
-└── services/          # API / data fetching layer
-    ├── postService.js
-    └── QuoteService.js
+MyJournalApp/
+├── public/                 # Static PWA assets (manifest, sw.js, icons)
+├── src/                    # React Frontend Source
+│   ├── components/         # Reusable Components
+│   ├── context/            # Auth & Theme Global State
+│   ├── hooks/              # Custom React Hooks
+│   ├── pages/              # App Pages / Router Views
+│   └── services/           # API Services
+├── journal-backend/        # Node.js Express Backend
+│   ├── controllers/        # Route logic
+│   ├── middleware/         # Auth verification & error handling
+│   ├── routes/             # Express routes
+│   └── swagger/            # OpenAPI definitions & JSON schema
 ```
 
-## Getting Started
-
-```bash
-npm install
-npm run dev
-```
-
-## Architecture Notes
-
-- Auth state lives in `AuthContext` — signup, login, logout, and session restore on refresh
-- Journal data is stored in `localStorage` under the `journals` key, each entry tagged with the owner's username
-- Fetch logic is separated into `services/` — hooks call services, components call hooks
-- `ProtectedRoute` wraps any route that requires authentication, reads from `AuthContext`
-- Dark mode is class-based (Tailwind `dark:` variants), toggled via `ThemeContext`
-
-## Concepts Practiced
-
-- JSX, components, props, state
-- useState, useEffect, useRef, useReducer, useContext
-- Custom hooks
-- React Router — dynamic routes, route params, protected routes
-- Context API with useReducer
-- Error Boundaries
-- API service layer pattern
-- Mock authentication flow

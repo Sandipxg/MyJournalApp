@@ -119,35 +119,35 @@ Use this file to track progress topic by topic.
 
 - [x] Never store plain passwords
 - [x] Validate all input
-- [ ] Learn CORS basics
-- [ ] Learn rate limiting
+- [x] Learn CORS basics
+- [x] Learn rate limiting
 - [x] Learn `helmet`
-- [ ] Avoid leaking internal errors
+- [x] Avoid leaking internal errors
 
 ## 15. API Testing
 
-- [ ] Test APIs with Postman or Thunder Client
-- [ ] Test signup
-- [ ] Test duplicate signup
-- [ ] Test login
-- [ ] Test wrong login
-- [ ] Test create journal
-- [ ] Test update journal
-- [ ] Test delete journal
+- [x] Test APIs with Postman or Thunder Client
+- [x] Test signup
+- [x] Test duplicate signup
+- [x] Test login
+- [x] Test wrong login
+- [x] Test create journal
+- [x] Test update journal
+- [x] Test delete journal
 
 
 ## 16. Logging Basics
 
-- [ ] Learn `console.log()`
-- [ ] Learn `console.error()`
-- [ ] Understand what to log during development
-- [ ] Understand what not to expose to users
-- [ ] Learn Winston or Pino later
+- [x] Learn `console.log()`
+- [x] Learn `console.error()`
+- [x] Understand what to log during development
+- [x] Understand what not to expose to users
+- [x] Learn Winston or Pino later
 
 ## 17. Deployment
 
-- [ ] Learn backend deployment basics
-- [ ] Deploy backend
-- [ ] Use hosted database
-- [ ] Set production environment variables
-- [ ] Connect frontend to deployed backend
+- [x] Learn backend deployment basics
+- [x] Deploy backend
+- [x] Use hosted database
+- [x] Set production environment variables
+- [x] Connect frontend to deployed backend

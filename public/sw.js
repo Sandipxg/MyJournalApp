@@ -1,8 +1,9 @@
-const CACHE_NAME = 'journal-cache-v4'
+const CACHE_NAME = 'journal-cache-v5' // Incremented to v5 to add offline.html fallback
 
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
+  '/offline.html', // Pre-cached for offline fallback
   '/manifest.json',
   '/favicon.svg',
   '/icons/icon-192.png',
@@ -13,7 +14,7 @@ const ASSETS_TO_CACHE = [
 
 // 1. Install Event — Pre-caching core stable assets
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installed (Production Settings)')
+  console.log('[Service Worker] Installed (v5)')
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Pre-caching static assets')
@@ -24,7 +25,7 @@ self.addEventListener('install', (event) => {
 
 // 2. Activate Event — Cleaning up outdated caches
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activated (Production Settings)')
+  console.log('[Service Worker] Activated (v5)')
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -39,7 +40,7 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// 3. Fetch Event — Cache-First with restricted dynamic caching for build assets (/assets/)
+// 3. Fetch Event — Cache-First with restricted dynamic caching & offline fallback
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') {
     return
@@ -57,8 +58,7 @@ self.addEventListener('fetch', (event) => {
       }
 
       return fetch(event.request).then((networkResponse) => {
-        // We only dynamically cache if the response is successful (status 200)
-        // AND it belongs to the compiled frontend production assets folder (/assets/)
+        // Dynamically cache compiled production JS/CSS assets
         const isAsset = event.request.url.includes('/assets/')
 
         if (networkResponse && networkResponse.status === 200 && isAsset) {
@@ -68,6 +68,12 @@ self.addEventListener('fetch', (event) => {
           })
         }
         return networkResponse
+      }).catch((error) => {
+        console.log('[Service Worker] Fetch failed, serving offline page if html request:', error)
+        // Check if the request is an HTML page request
+        if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
+          return caches.match('/offline.html')
+        }
       })
     })
   )

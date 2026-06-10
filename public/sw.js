@@ -1,4 +1,4 @@
-const CACHE_NAME = 'journal-cache-v1'
+const CACHE_NAME = 'journal-cache-v4'
 
 const ASSETS_TO_CACHE = [
   '/',
@@ -11,9 +11,9 @@ const ASSETS_TO_CACHE = [
   '/screenshots/screenshot-mobile.png'
 ]
 
-// 1. Install Event — Pre-caching Core static shell assets
+// 1. Install Event — Pre-caching core stable assets
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installed')
+  console.log('[Service Worker] Installed (Production Settings)')
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Pre-caching static assets')
@@ -24,7 +24,7 @@ self.addEventListener('install', (event) => {
 
 // 2. Activate Event — Cleaning up outdated caches
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activated')
+  console.log('[Service Worker] Activated (Production Settings)')
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -39,19 +39,36 @@ self.addEventListener('activate', (event) => {
   )
 })
 
-// 3. Fetch Event — Intercept requests and apply Caching Strategy
+// 3. Fetch Event — Cache-First with restricted dynamic caching for build assets (/assets/)
 self.addEventListener('fetch', (event) => {
-  // We only intercept GET requests for caching to avoid issues with POST/PUT/DELETE
   if (event.request.method !== 'GET') {
+    return
+  }
+
+  // Only handle same-origin requests
+  if (!event.request.url.startsWith(self.location.origin)) {
     return
   }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
-        return cachedResponse // Serve from cache backpack
+        return cachedResponse // Return cached asset
       }
-      return fetch(event.request) // Fetch from market (network)
+
+      return fetch(event.request).then((networkResponse) => {
+        // We only dynamically cache if the response is successful (status 200)
+        // AND it belongs to the compiled frontend production assets folder (/assets/)
+        const isAsset = event.request.url.includes('/assets/')
+
+        if (networkResponse && networkResponse.status === 200 && isAsset) {
+          const responseToCache = networkResponse.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache)
+          })
+        }
+        return networkResponse
+      })
     })
   )
 })

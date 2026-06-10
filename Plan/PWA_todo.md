@@ -55,8 +55,8 @@ Practice:
 
 Practice:
 
-* [ ] Load app after internet disconnect
-* [ ] Verify static assets still work
+* [x] Load app after internet disconnect
+* [x] Verify static assets still work
 
 ---
 

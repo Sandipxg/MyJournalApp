@@ -69,9 +69,9 @@ Practice:
 
 Practice:
 
-* [ ] Disconnect internet
-* [ ] Open app
-* [ ] Verify offline page appears
+* [x] Disconnect internet
+* [x] Open app
+* [x] Verify offline page appears
 
 ---
 
@@ -79,19 +79,19 @@ Practice:
 
 Learn:
 
-* [ ] Cache First
-* [ ] Network First
-* [ ] Stale While Revalidate
+* [x] Cache First
+* [x] Network First
+* [x] Stale While Revalidate
 
 Understand:
 
-* [ ] When each strategy should be used
-* [ ] Pros and cons of each strategy
+* [x] When each strategy should be used
+* [x] Pros and cons of each strategy
 
 Practice:
 
-* [ ] Use Cache First for images
-* [ ] Use Network First for API calls
+* [x] Use Cache First for images
+* [x] Use Network First for API calls
 
 ---
 
@@ -128,6 +128,15 @@ Practice:
 
 ---
 
+## 18.10 Offline Writes & Background Sync (Optional)
+
+* [ ] Learn IndexedDB basics (local browser database)
+* [ ] Store offline journal entries in IndexedDB
+* [ ] Learn Service Worker Background Sync API
+* [ ] Synchronize pending offline entries to Node.js backend when online
+
+---
+
 ## Final Goal
 
 Convert your Journal App into:
@@ -137,4 +146,5 @@ Convert your Journal App into:
 * [ ] Standalone app experience
 * [ ] Offline loading of frontend assets
 * [ ] Offline fallback page
+* [ ] Offline creation/editing of journal entries (via IndexedDB & Sync)
 * [ ] Lighthouse PWA score above 90

@@ -3,6 +3,7 @@ import { useContext } from "react"
 import { ThemeProvider } from "./context/ThemeContext"
 import ThemeContext from "./context/ThemeContext"
 import { AuthProvider, useAuth } from "./context/AuthContext"
+import { InstallProvider, useInstall } from './context/InstallContext'
 
 import HomePage from "./pages/Homepage"
 import JournalPage from "./pages/Journalpage"
@@ -14,6 +15,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 function AppLayout() {
   const { theme } = useContext(ThemeContext)
   const { currentUser, logout } = useAuth()
+  const { isInstallable, isInstalled, install } = useInstall()
   const navigate = useNavigate()
 
   function handleLogout() {
@@ -30,6 +32,17 @@ function AppLayout() {
           <Link to="/settings" className="text-purple-600 dark:text-purple-400 font-medium hover:text-purple-800">Settings</Link>
 
           <div className="ml-auto flex items-center gap-4">
+            {isInstallable && !isInstalled && (
+              <button
+                onClick={install}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+              >
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span>Install App</span>
+              </button>
+            )}
             {currentUser ? (
               <>
                 <span className="text-sm text-gray-500 dark:text-gray-400">Hi, {currentUser.username}</span>
@@ -69,9 +82,11 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <BrowserRouter>
-          <AppLayout />
-        </BrowserRouter>
+        <InstallProvider>
+          <BrowserRouter>
+            <AppLayout />
+          </BrowserRouter>
+        </InstallProvider>
       </ThemeProvider>
     </AuthProvider>
   )

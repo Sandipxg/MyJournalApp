@@ -97,15 +97,15 @@ Practice:
 
 ## 18.7 App Installation Experience
 
-* [ ] Detect install prompt
-* [ ] Show install button
-* [ ] Handle installation flow
-* [ ] Test uninstall/reinstall
+* [x] Detect install prompt
+* [x] Show install button
+* [x] Handle installation flow
+* [x] Test uninstall/reinstall
 
 Practice:
 
-* [ ] Install app on Android
-* [ ] Install app on Desktop
+* [x] Install app on Android
+* [x] Install app on Desktop
 
 ---
 

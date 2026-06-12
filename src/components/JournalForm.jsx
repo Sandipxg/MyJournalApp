@@ -35,14 +35,15 @@ function JournalForm({ addJournal, editingJournal, updateJournal }) {
       <input
         ref={inputRef}
         type="text"
+        aria-label="Journal entry text"
         placeholder="Write a journal entry..."
         value={title}
         onChange={(event) => setTitle(event.target.value)}
-        className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+        className="flex-1 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-lg text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
       />
       <button
         type="submit"
-        className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+        className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors cursor-pointer"
       >
         {editingJournal ? "Update" : "Add"}
       </button>

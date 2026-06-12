@@ -53,7 +53,7 @@ function LoginPage() {
               {...register("username", { required: "Username is required" })}
               type="text"
               placeholder="Enter your username"
-              className="px-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-lg text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
             {errors.username && <p className="text-red-500 text-xs">{errors.username.message}</p>}
           </div>
@@ -67,7 +67,7 @@ function LoginPage() {
               })}
               type="password"
               placeholder="Enter your password"
-              className="px-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+              className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-lg text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
             {errors.password && <p className="text-red-500 text-xs">{errors.password.message}</p>}
           </div>
@@ -76,7 +76,7 @@ function LoginPage() {
 
           <button
             type="submit"
-            className="bg-purple-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors mt-2"
+            className="bg-purple-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors mt-2 cursor-pointer"
           >
             {isSignup ? "Sign Up" : "Log In"}
           </button>
@@ -86,7 +86,7 @@ function LoginPage() {
           {isSignup ? "Already have an account?" : "Don't have an account?"}
           <button
             onClick={() => { setIsSignup(!isSignup); setAuthError(""); reset() }}
-            className="text-purple-600 ml-1 hover:underline"
+            className="text-purple-700 dark:text-purple-400 ml-1 hover:underline font-medium cursor-pointer"
           >
             {isSignup ? "Log in" : "Sign up"}
           </button>

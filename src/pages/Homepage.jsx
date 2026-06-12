@@ -17,7 +17,7 @@ function HomePage() {
       <div className="flex flex-col gap-3">
         {posts.map((post) => (
           <div key={post.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-5 py-4 shadow-sm">
-            <p className="text-xs text-gray-400 mb-1">#{post.id}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">#{post.id}</p>
             <h3 className="text-base font-medium text-gray-800 dark:text-gray-100 capitalize">{post.title}</h3>
           </div>
         ))}

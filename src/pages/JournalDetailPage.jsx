@@ -15,13 +15,13 @@ function JournalDetailPage() {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <p className="text-center text-gray-400 mt-10">Loading...</p>
+  if (loading) return <p className="text-center text-gray-500 dark:text-gray-400 mt-10 animate-pulse">Loading...</p>
 
   if (!entry) {
     return (
       <div className="text-center py-20">
-        <p className="text-gray-400 text-lg">Journal entry not found.</p>
-        <button onClick={() => navigate("/journals")} className="mt-4 text-purple-600 hover:underline text-sm">
+        <p className="text-gray-500 dark:text-gray-400 text-lg">Journal entry not found.</p>
+        <button onClick={() => navigate("/journals")} className="mt-4 text-purple-700 dark:text-purple-400 hover:underline text-sm font-medium">
           ← Back to journals
         </button>
       </div>
@@ -30,10 +30,10 @@ function JournalDetailPage() {
 
   return (
     <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-6 py-8 shadow-sm">
-      <button onClick={() => navigate("/journals")} className="text-sm text-purple-600 dark:text-purple-400 hover:underline mb-6 block">
+      <button onClick={() => navigate("/journals")} className="text-sm text-purple-700 dark:text-purple-400 hover:underline mb-6 block font-medium">
         ← Back to journals
       </button>
-      <p className="text-xs text-gray-400 mb-1">#{entry.id}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">#{entry.id}</p>
       <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">{entry.title}</h1>
     </div>
   )

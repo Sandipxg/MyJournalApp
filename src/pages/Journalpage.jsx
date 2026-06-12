@@ -61,10 +61,11 @@ function JournalPage() {
       />
       <input
         type="text"
+        aria-label="Search journals"
         placeholder="Search journals..."
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
-        className="w-full mt-4 px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400"
+        className="w-full mt-4 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
       />
       <div className="mt-6">
         <ErrorBoundary>

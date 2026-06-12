@@ -1,16 +1,17 @@
 import { BrowserRouter, Routes, Route, Link, NavLink, useNavigate } from "react-router-dom"
-import { useContext } from "react"
+import { useContext, lazy, Suspense } from "react"
 import { ThemeProvider } from "./context/ThemeContext"
 import ThemeContext from "./context/ThemeContext"
 import { AuthProvider, useAuth } from "./context/AuthContext"
 import { InstallProvider, useInstall } from './context/InstallContext'
 
-import HomePage from "./pages/Homepage"
-import JournalPage from "./pages/Journalpage"
-import JournalDetailPage from "./pages/JournalDetailPage"
-import SettingsPage from "./pages/Settingpage"
-import LoginPage from "./pages/Loginpage"
 import ProtectedRoute from "./components/ProtectedRoute"
+
+const HomePage = lazy(() => import("./pages/Homepage"))
+const JournalPage = lazy(() => import("./pages/Journalpage"))
+const JournalDetailPage = lazy(() => import("./pages/JournalDetailPage"))
+const SettingsPage = lazy(() => import("./pages/Settingpage"))
+const LoginPage = lazy(() => import("./pages/Loginpage"))
 
 // SVG icons for the bottom nav bar
 function HomeIcon({ className }) {
@@ -38,6 +39,15 @@ function SettingsIcon({ className }) {
         d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
     </svg>
+  )
+}
+
+function PageLoader() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+      <div className="w-12 h-12 border-4 border-purple-200 dark:border-purple-900 border-t-purple-600 dark:border-t-purple-400 rounded-full animate-spin"></div>
+      <p className="text-gray-500 dark:text-gray-400 text-sm font-medium animate-pulse">Loading page...</p>
+    </div>
   )
 }
 
@@ -108,19 +118,21 @@ function AppLayout() {
         {/* ── Main Content ── */}
         {/* pb-24 on mobile leaves room above the bottom nav bar */}
         <main className="max-w-3xl mx-auto px-4 py-6 md:py-8 pb-24 md:pb-8">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/journals" element={
-              <ProtectedRoute><JournalPage /></ProtectedRoute>
-            } />
-            <Route path="/journals/:id" element={
-              <ProtectedRoute><JournalDetailPage /></ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute><SettingsPage /></ProtectedRoute>
-            } />
-            <Route path="/auth" element={<LoginPage />} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/journals" element={
+                <ProtectedRoute><JournalPage /></ProtectedRoute>
+              } />
+              <Route path="/journals/:id" element={
+                <ProtectedRoute><JournalDetailPage /></ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute><SettingsPage /></ProtectedRoute>
+              } />
+              <Route path="/auth" element={<LoginPage />} />
+            </Routes>
+          </Suspense>
         </main>
 
         {/* ── Mobile Bottom Navigation Bar — hidden on md+ ── */}

@@ -111,11 +111,11 @@ Practice:
 
 ## 18.8 PWA Auditing
 
-* [ ] Learn Lighthouse basics
-* [ ] Run Lighthouse audit
-* [ ] Fix installability issues
-* [ ] Fix performance warnings
-* [ ] Fix accessibility warnings
+* [x] Learn Lighthouse basics
+* [x] Run Lighthouse audit
+* [x] Fix installability issues
+* [x] Fix performance warnings
+* [x] Fix accessibility warnings
 
 ---
 

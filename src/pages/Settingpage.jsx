@@ -37,22 +37,22 @@ function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Settings</h1>
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-6 py-5 shadow-sm flex items-center justify-between">
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">Settings</h1>
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 md:px-6 py-4 md:py-5 shadow-sm flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="font-medium text-gray-800 dark:text-gray-100">Theme</p>
           <p className="text-sm text-gray-500 dark:text-gray-400">Current: {theme}</p>
         </div>
         <button
           onClick={changeTheme}
-          className="bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+          className="w-full sm:w-auto bg-purple-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
         >
           Switch to {theme === "light" ? "Dark" : "Light"}
         </button>
       </div>
 
       {/* App Installation Experience */}
-      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-6 py-5 shadow-sm space-y-4">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 md:px-6 py-4 md:py-5 shadow-sm space-y-4">
         <div>
           <h2 className="font-medium text-gray-800 dark:text-gray-100">App Installation</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -116,7 +116,7 @@ function SettingsPage() {
 
       <form
         onSubmit={handleDeleteAccount}
-        className="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900 rounded-lg px-6 py-5 shadow-sm space-y-4"
+        className="bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900 rounded-lg px-4 md:px-6 py-4 md:py-5 shadow-sm space-y-4"
       >
         <div>
           <p className="font-medium text-red-600 dark:text-red-400">Delete account</p>
@@ -153,7 +153,7 @@ function SettingsPage() {
         <button
           type="submit"
           disabled={isDeleting}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-60"
+          className="w-full sm:w-auto bg-red-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-60"
         >
           {isDeleting ? "Deleting..." : "Delete account"}
         </button>

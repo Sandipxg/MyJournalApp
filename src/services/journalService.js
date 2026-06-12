@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000/api/journals"
+const BASE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/journals`
 
 export async function fetchJournals() {
   const res = await fetch(BASE_URL, { credentials: "include" })

@@ -33,7 +33,8 @@ const app = express()
 // Security headers — must be first
 app.use(helmet())
 app.use(globalLimiter)
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }))
+const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173'
+app.use(cors({ origin: allowedOrigin, credentials: true }))
 app.use(express.json())
 app.use(cookieParser())
 

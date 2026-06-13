@@ -8,6 +8,7 @@ const swaggerDocument = require('./swagger/swagger.json')
 
 const authRoutes = require('./routes/auth')
 const journalRoutes = require('./routes/journals')
+const pushRoutes = require('./routes/push')
 const { notFound, errorHandler } = require('./middleware/errorHandler')
 
 // Global limiter — all routes: 100 requests per 15 minutes per IP
@@ -43,6 +44,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
 app.use('/api/auth', authLimiter, authRoutes)
 app.use('/api/journals', journalRoutes)
+app.use('/api/push', pushRoutes)
 
 app.use(notFound)
 app.use(errorHandler)

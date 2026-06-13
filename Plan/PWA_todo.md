@@ -121,10 +121,10 @@ Practice:
 
 ## 18.9 Push Notifications (Optional)
 
-* [ ] Learn Web Push basics
-* [ ] Learn notification permissions
-* [ ] Send local notification
-* [ ] Learn push notification architecture
+* [x] Learn Web Push basics
+* [x] Learn notification permissions
+* [x] Send local notification
+* [x] Learn push notification architecture
 
 ---
 
@@ -141,10 +141,10 @@ Practice:
 
 Convert your Journal App into:
 
-* [ ] Installable application
-* [ ] Home screen icon
-* [ ] Standalone app experience
-* [ ] Offline loading of frontend assets
-* [ ] Offline fallback page
+* [x] Installable application
+* [x] Home screen icon
+* [x] Standalone app experience
+* [x] Offline loading of frontend assets
+* [x] Offline fallback page
 * [ ] Offline creation/editing of journal entries (via IndexedDB & Sync)
 * [ ] Lighthouse PWA score above 90

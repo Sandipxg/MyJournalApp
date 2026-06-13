@@ -100,3 +100,74 @@ self.addEventListener('fetch', (event) => {
     )
   }
 })
+
+// 4. Push Event — Triggered when a push message is received from the server
+self.addEventListener('push', (event) => {
+  console.log('[Service Worker] Push event received')
+
+  let data = {
+    title: 'Journal App',
+    body: 'You have a new message!',
+    url: '/'
+  }
+
+  // Parse payload from server if present
+  if (event.data) {
+    try {
+      data = event.data.json()
+    } catch (err) {
+      console.error('[Service Worker] Failed to parse push data as JSON', err)
+      data.body = event.data.text() // Fallback to plain text
+    }
+  }
+
+  // Define notification display options
+  const options = {
+    body: data.body,
+    icon: '/icons/icon-192.png', // Main image shown next to body
+    badge: '/icons/icon-192.png', // Small monochrome status bar icon
+    data: {
+      url: data.url || '/' // Attach custom data (e.g. url to open on click)
+    },
+    // Vibration pattern: vibration-silence-vibration (in ms)
+    vibrate: [100, 50, 100],
+    // Ensure notification stays active until user acts or dismisses
+    requireInteraction: true
+  }
+
+  // Keep the service worker alive until the notification is rendered
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  )
+})
+
+// 5. Notification Click Event — Triggered when the user clicks the notification card
+self.addEventListener('notificationclick', (event) => {
+  console.log('[Service Worker] Notification clicked')
+  
+  // Close the active notification card from screen/center
+  event.notification.close()
+
+  // Retrieve the target URL from the custom data attached
+  const targetUrl = event.notification.data?.url || '/'
+
+  // Keep service worker alive while locating or opening the window
+  event.waitUntil(
+    // Find all window clients (open tabs/windows of our app)
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        // If an app window/tab is already open, focus it and redirect
+        for (const client of clientList) {
+          const clientUrl = new URL(client.url)
+          if (clientUrl.origin === self.location.origin) {
+            client.focus()
+            return client.navigate(targetUrl)
+          }
+        }
+        // If the app is closed, open a new window on the target route
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(targetUrl)
+        }
+      })
+  )
+})

@@ -3,6 +3,7 @@ const authController = require('../controllers/authController')
 
 const validate = require('../middleware/validate')
 const { signupSchema, loginSchema } = require('../validators/authValidator')
+const auth = require('../middleware/auth')
 
 const router = express.Router()
 
@@ -10,6 +11,7 @@ router.post('/signup', validate(signupSchema), authController.signup)
 router.post('/login', validate(loginSchema), authController.login)
 router.post('/logout', authController.logout)
 router.delete('/deleteaccount', validate(loginSchema), authController.deleteAccount)
+router.put('/reminder', auth, authController.updateReminder)
 
 module.exports = router
 

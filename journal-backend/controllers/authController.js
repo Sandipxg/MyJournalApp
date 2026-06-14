@@ -54,4 +54,34 @@ async function logout(req, res) {
   res.json({ message: 'Logged out successfully' })
 }
 
-module.exports = { signup, login, deleteAccount, logout }
+async function updateReminder(req, res) {
+  const { reminderTime, timezone } = req.body
+  const userId = req.userId
+
+  // Validate reminderTime if provided
+  if (reminderTime !== null && typeof reminderTime === 'string') {
+    const timeRegex = /^\d{2}:\d{2}$/
+    if (!timeRegex.test(reminderTime)) {
+      throw new AppError('Invalid reminder time format. Expected HH:MM or null', 400)
+    }
+  }
+
+  // Validate timezone if provided
+  if (timezone && typeof timezone === 'string') {
+    try {
+      Intl.DateTimeFormat(undefined, { timeZone: timezone })
+    } catch (err) {
+      throw new AppError('Invalid timezone identifier', 400)
+    }
+  }
+
+  const updatedUser = await authService.updateReminder(
+    userId,
+    reminderTime || null,
+    timezone || 'UTC'
+  )
+
+  res.json(updatedUser)
+}
+
+module.exports = { signup, login, deleteAccount, logout, updateReminder }

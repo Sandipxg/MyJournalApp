@@ -76,8 +76,24 @@ export function AuthProvider({ children }) {
     return data
   }
 
+  async function updateReminderSettings(reminderTime, timezone) {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/reminder`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reminderTime, timezone }),
+      credentials: 'include'
+    })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || 'Failed to update reminder settings')
+
+    const updatedUser = { ...currentUser, reminderTime: data.reminderTime, timezone: data.timezone }
+    localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+    setCurrentUser(updatedUser)
+    return updatedUser
+  }
+
   return (
-    <AuthContext.Provider value={{ currentUser, signup, login, logout , deleteAccount }}>
+    <AuthContext.Provider value={{ currentUser, signup, login, logout, deleteAccount, updateReminderSettings }}>
       {children}
     </AuthContext.Provider>
   )

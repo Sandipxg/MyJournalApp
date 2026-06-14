@@ -14,6 +14,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    reminderTime: {
+      type: String, // Format: "HH:MM", or null if notifications are disabled
+      default: null,
+    },
+    timezone: {
+      type: String, // Local timezone of the device, e.g. "Asia/Kolkata"
+      default: 'UTC',
+    },
   },
   {
     timestamps: true,
@@ -27,6 +35,8 @@ function toClientUser(user) {
   return {
     id: user._id.toString(),
     username: user.username,
+    reminderTime: user.reminderTime,
+    timezone: user.timezone,
   }
 }
 
@@ -53,4 +63,13 @@ async function removeById(userId) {
   await User.findByIdAndDelete(userId)
 }
 
-module.exports = { findByUsername, findByCredentials, create, removeById }
+async function updateReminder(userId, reminderTime, timezone) {
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { reminderTime, timezone },
+    { new: true }
+  )
+  return toClientUser(user)
+}
+
+module.exports = { findByUsername, findByCredentials, create, removeById, updateReminder, User }

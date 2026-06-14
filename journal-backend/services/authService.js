@@ -26,4 +26,8 @@ async function deleteAccount(username, password) {
   return { message: 'Account deleted'  }
 }
 
-module.exports = { signup, login , deleteAccount }
+async function updateReminder(userId, reminderTime, timezone) {
+  return await userModel.updateReminder(userId, reminderTime, timezone)
+}
+
+module.exports = { signup, login , deleteAccount, updateReminder }

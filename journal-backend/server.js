@@ -3,9 +3,13 @@ require('dotenv').config()
 const app = require('./app')
 const PORT = process.env.PORT || 3000
 const connectDb = require('./config/db')
+const { initScheduler } = require('./services/cronService')
 
 async function startServer() {
     await connectDb()
+
+    // Initialize the daily reminder scheduled cron service
+    initScheduler()
 
     app.listen(PORT, () => console.log(`Journal API running on http://localhost:${PORT}`))
 }

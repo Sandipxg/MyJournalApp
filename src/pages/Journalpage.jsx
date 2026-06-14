@@ -18,6 +18,42 @@ function JournalPage() {
       .catch(err => setError(err.message))
   }, [])
 
+  useEffect(() => {
+    const handleServiceWorkerMessage = (event) => {
+      if (event.data && event.data.type === 'SYNC_COMPLETE') {
+        console.log('[Journal Page] Background sync complete. Refreshing entries...')
+        fetchJournals()
+          .then(setJournals)
+          .catch(err => setError(err.message))
+      }
+    }
+
+    const handleOnline = () => {
+      console.log('[Journal Page] Online status detected. Triggering manual sync fallback...')
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'TRIGGER_SYNC' })
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage)
+    }
+    window.addEventListener('online', handleOnline)
+
+    // Trigger sync on initial mount just in case there are leftover actions
+    if (navigator.onLine && 'serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'TRIGGER_SYNC' })
+    }
+
+    return () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage)
+      }
+      window.removeEventListener('online', handleOnline)
+    }
+  }, [])
+
+
   async function addJournal(newEntry) {
     try {
       const created = await createJournal(newEntry.title)

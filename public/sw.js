@@ -1,4 +1,4 @@
-const CACHE_NAME = 'journal-cache-v6' // Incremented to v6 to support API Network-First strategy
+const CACHE_NAME = 'journal-cache-v7' // Incremented to v7 to support Offline Writes & Background Sync
 
 const ASSETS_TO_CACHE = [
   '/',
@@ -14,7 +14,7 @@ const ASSETS_TO_CACHE = [
 
 // 1. Install Event — Pre-caching core stable assets
 self.addEventListener('install', (event) => {
-  console.log('[Service Worker] Installed (v6)')
+  console.log('[Service Worker] Installed (v7)')
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Pre-caching static assets')
@@ -25,7 +25,7 @@ self.addEventListener('install', (event) => {
 
 // 2. Activate Event — Cleaning up outdated caches
 self.addEventListener('activate', (event) => {
-  console.log('[Service Worker] Activated (v6)')
+  console.log('[Service Worker] Activated (v7)')
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
@@ -171,3 +171,158 @@ self.addEventListener('notificationclick', (event) => {
       })
   )
 })
+
+/* ==========================================================================
+   OFFLINE WRITES & BACKGROUND SYNC LOGIC
+   ========================================================================== */
+
+const DB_NAME = 'journal-offline-db'
+const DB_VERSION = 1
+const STORE_NAME = 'offline-actions'
+
+/**
+ * Opens IndexedDB from the Service Worker scope.
+ */
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION)
+    request.onerror = () => reject(request.error)
+    request.onsuccess = () => resolve(request.result)
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
+      }
+    }
+  })
+}
+
+/**
+ * Reads all offline actions from the store.
+ */
+function getOfflineActions() {
+  return openDB().then((db) => {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readonly')
+      const store = transaction.objectStore(STORE_NAME)
+      const request = store.getAll()
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  })
+}
+
+/**
+ * Deletes a processed action from the IndexedDB store.
+ */
+function deleteOfflineAction(id) {
+  return openDB().then((db) => {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite')
+      const store = transaction.objectStore(STORE_NAME)
+      const request = store.delete(id)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  })
+}
+
+/**
+ * Replays all queued actions to the backend in chronological order.
+ */
+async function replayOfflineActions() {
+  console.log('[Service Worker] Replaying offline actions queue...')
+  const actions = await getOfflineActions()
+  if (!actions || actions.length === 0) {
+    console.log('[Service Worker] Queue is empty.')
+    return
+  }
+
+  // Map to link temporary IDs created offline with database MongoDB IDs
+  const idMap = new Map()
+
+  for (const action of actions) {
+    try {
+      let entryId = action.entryId
+      // Resolve temp IDs to MongoDB IDs
+      if (idMap.has(entryId)) {
+        entryId = idMap.get(entryId)
+      }
+
+      if (action.action === 'CREATE') {
+        const response = await fetch('/api/journals', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: action.payload.title }),
+          credentials: 'include'
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to replay CREATE action: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        console.log(`[Service Worker] Replay CREATE success. Temp ${action.entryId} -> Real ${data.id}`)
+        idMap.set(action.entryId, data.id)
+      } 
+      
+      else if (action.action === 'UPDATE') {
+        const response = await fetch(`/api/journals/${entryId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(action.payload),
+          credentials: 'include'
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to replay UPDATE action for ${entryId}: ${response.statusText}`)
+        }
+        console.log(`[Service Worker] Replay UPDATE success for ${entryId}`)
+      } 
+      
+      else if (action.action === 'DELETE') {
+        if (entryId.startsWith('temp-')) {
+          console.log(`[Service Worker] Skipping backend DELETE call for temp entry: ${entryId}`)
+        } else {
+          const response = await fetch(`/api/journals/${entryId}`, {
+            method: 'DELETE',
+            credentials: 'include'
+          })
+
+          if (!response.ok) {
+            throw new Error(`Failed to replay DELETE action for ${entryId}: ${response.statusText}`)
+          }
+          console.log(`[Service Worker] Replay DELETE success for ${entryId}`)
+        }
+      }
+
+      // Remove item from local DB once backend processing succeeds
+      await deleteOfflineAction(action.id)
+    } catch (error) {
+      console.error(`[Service Worker] Sync process failed on action ID ${action.id}:`, error)
+      throw error // Escalate so browser retries subsequent sync iterations
+    }
+  }
+
+  // Broadcast completion message to active client tabs to refresh UI lists
+  const clientList = await self.clients.matchAll()
+  clientList.forEach((client) => {
+    client.postMessage({ type: 'SYNC_COMPLETE' })
+  })
+}
+
+// 6. Background Sync Listener
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-journal-actions') {
+    event.waitUntil(replayOfflineActions())
+  }
+})
+
+// 7. Message event listener for manual sync triggers
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'TRIGGER_SYNC') {
+    console.log('[Service Worker] Manual sync trigger received via client message')
+    event.waitUntil(replayOfflineActions())
+  }
+})
+

@@ -97,7 +97,18 @@ Use this file to track progress topic by topic.
 - [x] Protect journal routes
 - [x] Stop trusting `userId` from frontend
 
-## 12. Validation
+## 12. Social Authentication (OAuth 2.0)
+
+Learn:
+- [ ] Learn OAuth 2.0 and OpenID Connect (OIDC) protocols
+- [ ] Understand Authorization Code flow (interaction between browser, backend, and OAuth provider)
+
+Practice:
+- [ ] Create developer credentials on Google / GitHub Developer Console
+- [ ] Implement "Sign in with Google" redirect and callback endpoint using Passport.js or native OAuth SDK
+- [ ] Issue JWT for successfully authenticated social login users
+
+## 13. Validation
 
 - [x] Learn schema validation
 - [x] Choose validation library
@@ -106,7 +117,7 @@ Use this file to track progress topic by topic.
 - [x] Validate journal input
 - [x] Return clean validation errors
 
-## 13. API Documentation
+## 14. API Documentation
 
 - [x] Create simple API docs markdown file
 - [x] Document auth endpoints
@@ -115,7 +126,7 @@ Use this file to track progress topic by topic.
 - [x] Add response examples
 - [x] Add status codes
 
-## 14. Security Basics
+## 15. Security Basics
 
 - [x] Never store plain passwords
 - [x] Validate all input
@@ -124,7 +135,7 @@ Use this file to track progress topic by topic.
 - [x] Learn `helmet`
 - [x] Avoid leaking internal errors
 
-## 15. API Testing
+## 16. API Testing
 
 - [x] Test APIs with Postman or Thunder Client
 - [x] Test signup
@@ -136,7 +147,7 @@ Use this file to track progress topic by topic.
 - [x] Test delete journal
 
 
-## 16. Logging Basics
+## 17. Logging Basics
 
 - [x] Learn `console.log()`
 - [x] Learn `console.error()`
@@ -144,10 +155,25 @@ Use this file to track progress topic by topic.
 - [x] Understand what not to expose to users
 - [x] Learn Winston or Pino later
 
-## 17. Deployment
+## 18. Deployment
 
 - [x] Learn backend deployment basics
 - [x] Deploy backend
 - [x] Use hosted database
 - [x] Set production environment variables
 - [x] Connect frontend to deployed backend
+
+## 19. PWA (Progressive Web App)
+
+- [ ] Refer to the detailed checklist in [PWA_todo.md](./PWA_todo.md) to implement offline capabilities, background sync, and install experience.
+
+## 20. Docker
+
+Learn:
+- [ ] Learn Docker basics (Images, Containers, Volumes, and Networking)
+- [ ] Understand the difference between a `Dockerfile` and `docker-compose.yml`
+
+Practice:
+- [ ] Create a `Dockerfile` for the Node.js backend
+- [ ] Create a `Dockerfile` for the React frontend
+- [ ] Write a `docker-compose.yml` to spin up the frontend, backend, and MongoDB database together locally

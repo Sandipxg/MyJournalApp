@@ -77,7 +77,7 @@ export async function fetchJournal(id) {
 }
 
 export async function createJournal(title) {
-  if (!navigator.onLine) {
+  const runOfflineFallback = async () => {
     const tempId = `temp-${Date.now()}`
     const action = {
       action: 'CREATE',
@@ -94,18 +94,31 @@ export async function createJournal(title) {
     }
   }
 
-  const res = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title }),
-    credentials: 'include'
-  })
-  if (!res.ok) throw new Error('Failed to create journal')
-  return res.json()
+  if (!navigator.onLine) {
+    return runOfflineFallback()
+  }
+
+  try {
+    const res = await fetch(BASE_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title }),
+      credentials: 'include'
+    })
+    if (!res.ok) throw new Error('Failed to create journal')
+    return await res.json()
+  } catch (err) {
+    const isNetworkError = err.name === 'TypeError' || err.message === 'Failed to fetch'
+    if (isNetworkError) {
+      console.warn('[Journal Service] Network error during CREATE, queueing offline:', err)
+      return runOfflineFallback()
+    }
+    throw err
+  }
 }
 
 export async function updateJournal(id, data) {
-  if (!navigator.onLine) {
+  const runOfflineFallback = async () => {
     const action = {
       action: 'UPDATE',
       entryId: id,
@@ -117,18 +130,31 @@ export async function updateJournal(id, data) {
     return { id, ...data }
   }
 
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-    credentials: 'include'
-  })
-  if (!res.ok) throw new Error('Failed to update journal')
-  return res.json()
+  if (!navigator.onLine) {
+    return runOfflineFallback()
+  }
+
+  try {
+    const res = await fetch(`${BASE_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include'
+    })
+    if (!res.ok) throw new Error('Failed to update journal')
+    return await res.json()
+  } catch (err) {
+    const isNetworkError = err.name === 'TypeError' || err.message === 'Failed to fetch'
+    if (isNetworkError) {
+      console.warn('[Journal Service] Network error during UPDATE, queueing offline:', err)
+      return runOfflineFallback()
+    }
+    throw err
+  }
 }
 
 export async function deleteJournal(id) {
-  if (!navigator.onLine) {
+  const runOfflineFallback = async () => {
     const action = {
       action: 'DELETE',
       entryId: id,
@@ -140,11 +166,24 @@ export async function deleteJournal(id) {
     return { id }
   }
 
-  const res = await fetch(`${BASE_URL}/${id}`, {
-    method: 'DELETE',
-    credentials: 'include'
-  })
-  if (!res.ok) throw new Error('Failed to delete journal')
-  return res.json()
+  if (!navigator.onLine) {
+    return runOfflineFallback()
+  }
+
+  try {
+    const res = await fetch(`${BASE_URL}/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+    if (!res.ok) throw new Error('Failed to delete journal')
+    return await res.json()
+  } catch (err) {
+    const isNetworkError = err.name === 'TypeError' || err.message === 'Failed to fetch'
+    if (isNetworkError) {
+      console.warn('[Journal Service] Network error during DELETE, queueing offline:', err)
+      return runOfflineFallback()
+    }
+    throw err
+  }
 }
 

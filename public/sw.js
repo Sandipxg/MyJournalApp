@@ -1,4 +1,4 @@
-const CACHE_NAME = 'journal-cache-v7' // Incremented to v7 to support Offline Writes & Background Sync
+const CACHE_NAME = 'journal-cache-v10' // Incremented to v10 to support route-selective offline fallbacks
 
 const ASSETS_TO_CACHE = [
   '/',
@@ -39,6 +39,27 @@ self.addEventListener('activate', (event) => {
     })
   )
 })
+
+/**
+ * Helper to check if a pathname is a valid React app route.
+ * Used to decide if we serve index.html or offline.html when offline.
+ */
+function isValidAppRoute(path) {
+  const cleanPath = path.split('?')[0].split('#')[0]
+  const exactRoutes = ['/', '/index.html', '/journals', '/settings', '/auth']
+  
+  if (exactRoutes.includes(cleanPath)) {
+    return true
+  }
+
+  // Matches /journals/:id (a 24-character hexadecimal MongoDB ObjectId)
+  const journalDetailRegex = /^\/journals\/[a-f0-9]{24}$/
+  if (journalDetailRegex.test(cleanPath)) {
+    return true
+  }
+
+  return false
+}
 
 // 3. Fetch Event — Intercept and route requests based on Caching Strategies
 self.addEventListener('fetch', (event) => {
@@ -90,11 +111,17 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse
         }).catch((error) => {
-          console.log('[Service Worker] Static fetch failed, serving offline page if document:', error)
-          // Fallback to offline page for document navigation requests
+          console.log('[Service Worker] Static fetch failed, routing fallback for document:', error)
+          // Fallback logic for document navigation requests when offline
           if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
-            return caches.match('/offline.html')
+            const urlObj = new URL(event.request.url)
+            const path = urlObj.pathname
+            if (isValidAppRoute(path)) {
+              return caches.match('/') // Serve React app shell for valid routes
+            }
+            return caches.match('/offline.html') // Serve static offline page for random routes
           }
+          throw error
         })
       })
     )

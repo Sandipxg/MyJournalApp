@@ -138,6 +138,36 @@ Practice:
 
 ---
 
+## 18.11 Storage Management (Optional)
+
+Understanding:
+
+* [ ] Learn storage estimate API (`navigator.storage.estimate()`)
+* [ ] Understand browser quotas
+* [ ] Understand Cache limits
+* [ ] Understand IndexedDB limits
+---
+
+## 18.12 Native App Branding & Feel (Optional)
+
+* [ ] Configure maskable icons in manifest (prevents browser emblem framing on Android)
+* [ ] Understand WebAPK generation on Android (removes browser badge from installed app icon)
+* [ ] Set theme and background colors to match OS system UI bars
+* [ ] Hide browser branding in push notifications using Service Worker `badge` and `icon` properties
+* [ ] Package PWA as a native app using Trusted Web Activities (TWA) and Bubblewrap CLI
+* [ ] Configure Digital Asset Links (`.well-known/assetlinks.json`) to verify domain ownership and remove browser URL bar
+
+---
+
+## 18.13 PWA Update Strategies (Critical for Production)
+
+* [ ] Understand the Service Worker `waiting` lifecycle state
+* [ ] Detect when a new Service Worker is available in the background
+* [ ] Implement a "New update available" toast/alert UI prompting user to reload
+* [ ] Trigger `skipWaiting()` and update client immediately on user confirmation
+
+---
+
 ## Final Goal
 
 Convert your Journal App into:

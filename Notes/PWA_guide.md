@@ -634,6 +634,45 @@ If a user writes a new journal entry offline and edits it before reconnecting:
 > **Why you must test offline features on port 4173 (`npm run preview`):**
 > Running `npm run build` compiles your entire application into a single, bundled JavaScript file inside `/dist/assets/`. When you visit the app once while online on port `4173`, the Service Worker intercepts and caches this production bundle. When you go offline, the Service Worker successfully loads this cached bundle, enabling the application to boot and route offline.
 
+### 11.1 Component Roles & Architecture
+
+Three files coordinate to manage the offline pipeline:
+1. **[db.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/src/utils/db.js)**: Wrapper around IndexedDB to initialize the database (`journal-offline-db`), write actions to `offline-actions`, read all pending actions, and delete them on success.
+2. **[journalService.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/src/services/journalService.js)**: The frontend API layer that intercepts offline operations (`createJournal`, `updateJournal`, `deleteJournal`), registers Background Sync tags, and returns optimistic mock objects for instant UI updates.
+3. **[sw.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/public/sw.js)**: Serves cached GET items when offline, listens to the browser `sync` event, runs the replay fetch requests sequentially, resolves temporary IDs to real MongoDB IDs, and broadcasts UI refresh signals.
+
+---
+
+### 11.2 Step-by-Step Code Execution Flow
+
+When a write request is triggered offline (e.g., creating a journal entry):
+
+1. **Frontend Interception**: In [journalService.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/src/services/journalService.js), the `fetch()` call fails or `navigator.onLine` returns `false`. The `runOfflineFallback()` executes.
+2. **Mocking the Request**:
+   * Generates a temporary ID (e.g., `temp-1718534800000`).
+   * Saves a JSON action descriptor (e.g., `{ action: 'CREATE', entryId: 'temp-...', payload: { title } }`) to IndexedDB.
+   * Registers a sync tag with the browser:
+     ```javascript
+     const registration = await navigator.serviceWorker.ready;
+     await registration.sync.register('sync-journal-actions');
+     ```
+3. **Optimistic Rendering**: The API client immediately returns the mocked entry to React so the UI updates instantly without any loading spinner.
+4. **Background Replay**: Once the browser reconnects, the Background Sync manager triggers the `sync` listener inside [sw.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/public/sw.js). 
+   * The SW reads all actions sequentially.
+   * For `CREATE`, it fires the `POST` query. The server returns the final database ID.
+   * The SW maintains a map of `tempId -> realId` to rewrite any subsequent `UPDATE`/`DELETE` calls before sending them.
+   * Successfully executed actions are removed from IndexedDB one-by-one.
+5. **Seamless Refresh**: The SW broadcasts a message (`SYNC_COMPLETE`) to all browser tabs. The React frontend listens for this message and triggers a background fetch to sync the UI state with the server database.
+
+---
+
+### 11.3 Cache Storage API vs. In-Memory Merging
+
+It is critical to distinguish between these two caching systems when offline:
+
+* **Resource/Response Cache (Cache Storage API)**: Stores raw HTTP GET responses. When offline, this cache is **read-only** (fetch fails, so the Service Worker cannot overwrite cached data).
+* **In-Memory UI State (React/Service Layer)**: Because the Cache Storage API cannot update offline, [journalService.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/src/services/journalService.js) handles this dynamically. Whenever `fetchJournals()` runs offline, it fetches the stale entries served from the Service Worker cache and **applies the local IndexedDB pending actions on top of them in-memory** before passing the final merged array to React.
+
 
 
 

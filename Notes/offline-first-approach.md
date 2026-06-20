@@ -135,97 +135,37 @@ self.addEventListener('sync', (event) => {
 
 ---
 
-### Option B — `window.addEventListener('online', ...)` (Fallback)
+### Option B — Client-to-Service-Worker Message (Fallback)
 
-This is the **simpler approach**. It works while the tab is open and is used as a
-fallback when Background Sync is not supported.
+For browsers that do not support Background Sync (such as Safari and iOS), the client-side code acts as a fallback. Instead of executing the sync logic directly in the main thread (which would bypass service worker caches and request structures), the client monitors the connection status and requests the active Service Worker to execute the sync.
 
-```js
-// Register once when the app loads (e.g. in main.js or App.jsx)
-window.addEventListener('online', async () => {
-  console.log('[App] Back online. Attempting to sync offline actions...')
-  await replayOfflineActions()
-})
-```
+**The Workflow:**
+1. **Connection Listener:** The browser client registers an `'online'` event listener inside the application pages.
+2. **PostMessage Trigger:** When a connection transition is detected, the client verifies if `navigator.serviceWorker.controller` is available and sends a message payload of `{ type: 'TRIGGER_SYNC' }` to the Service Worker.
+3. **Manual Run:** The Service Worker receives this message, intercepts the payload, and calls the queue replay function manually.
 
-This fires every time `navigator.onLine` transitions from `false` to `true`.
+This ensures that synchronization is consistently handled within the Service Worker context, whether triggered automatically by Chrome's Background Sync Manager or manually by Safari's client message.
 
 ---
 
-## The Replay / Sync Function
+## The Replay / Sync Function (Inside `sw.js`)
 
-This is the core function that reads the queue and re-fires each request against the backend.
-It handles success, failure, and temp ID resolution for CREATE actions.
+The sync process is executed entirely inside the service worker context. It reads the IndexedDB queue in chronological order, resolves temporary IDs, replays API requests, and refreshes the user interface on completion.
 
-```js
-import {
-  getOfflineActions,
-  deleteOfflineAction,
-  updateOfflineAction
-} from '../utils/db'
+> **Note on Service Worker Scope:** Because service workers cannot easily load ES6 module files natively across all user browsers, the IndexedDB functions (`openDB`, `getOfflineActions`, `deleteOfflineAction`) are defined directly inside `sw.js` to ensure backward compatibility.
 
-const BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/journals`
+### Replay & Sync Lifecycle Steps
 
-/**
- * Replays all queued offline actions against the backend in chronological order.
- * - On success: deletes the action from IndexedDB
- * - On network failure: leaves it in the queue for the next sync attempt
- * - On server error: logs and skips (avoids infinite retry on bad data)
- */
-export const replayOfflineActions = async () => {
-  const actions = await getOfflineActions()
+1. **Querying the Store:** The service worker reads all queued operations from the `offline-actions` store in IndexedDB.
+2. **Iterative API Calls:** It processes actions sequentially. For each queued event (CREATE, UPDATE, or DELETE), it makes a corresponding HTTP call against the backend:
+   * **Temp ID Mapping:** For CREATE actions, the backend returns a permanent MongoDB ObjectID. The service worker tracks this in an in-memory mapping (`idMap`). If a subsequent UPDATE or DELETE in the same queue references the temporary ID (e.g. `temp-171...`), the service worker automatically replaces the temporary ID with the real ID before making the request, preventing 404 errors.
+   * **Skip Redundant Updates:** If an item is created and then immediately deleted offline, the service worker skips calling the backend DELETE endpoint completely, saving network resources.
+3. **Queue Cleanup:**
+   * **On Success:** The action is deleted from IndexedDB.
+   * **On Network Error:** The loop terminates immediately (`break`) to maintain chronological action ordering for the next attempt.
+   * **On Request Rejection (e.g., 400 Bad Request):** The item is logged and deleted to prevent a malformed request from blocking the queue indefinitely.
+4. **Client Notifications:** Once the queue has been processed, the service worker queries all open window clients and broadcasts a `SYNC_COMPLETE` message. Active browser tabs listen to this event and call `fetchJournals()` to update the local UI view.
 
-  if (!actions || actions.length === 0) {
-    console.log('[Sync] No offline actions to replay.')
-    return
-  }
-
-  console.log(`[Sync] Replaying ${actions.length} offline action(s)...`)
-
-  for (const action of actions) {
-    try {
-      let res
-
-      if (action.action === 'CREATE') {
-        res = await fetch(BASE_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(action.payload),
-          credentials: 'include'
-        })
-      } else if (action.action === 'UPDATE') {
-        res = await fetch(`${BASE_URL}/${action.entryId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(action.payload),
-          credentials: 'include'
-        })
-      } else if (action.action === 'DELETE') {
-        res = await fetch(`${BASE_URL}/${action.entryId}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        })
-      }
-
-      if (res && res.ok) {
-        // Successfully synced — remove from queue
-        await deleteOfflineAction(action.id)
-        console.log(`[Sync] Action ${action.id} (${action.action}) synced and removed.`)
-      } else {
-        // Server rejected the request (e.g. 400, 404) — skip to avoid infinite retry
-        const errText = res ? await res.text() : 'No response'
-        console.error(`[Sync] Server rejected action ${action.id}: ${errText}. Skipping.`)
-        await deleteOfflineAction(action.id)
-      }
-
-    } catch (err) {
-      // Still offline or network error — leave in queue, stop retrying for now
-      console.warn(`[Sync] Network error during replay of action ${action.id}. Will retry later.`, err)
-      break // Stop processing further actions if we're still offline
-    }
-  }
-}
-```
 
 ---
 

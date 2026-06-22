@@ -20,7 +20,7 @@ startServer().catch((error) => {
 
     if (error.code === 'ECONNREFUSED' && error.syscall === 'querySrv') {
         console.error('MongoDB Atlas SRV DNS lookup was refused.')
-        console.error('Try adding MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1 to journal-backend/.env, or switch your network DNS to Google/Cloudflare.')
+        console.error('Try adding MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1 to backend/.env, or switch your network DNS to Google/Cloudflare.')
     }
 
     process.exit(1)

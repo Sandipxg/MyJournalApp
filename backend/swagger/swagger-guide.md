@@ -28,7 +28,7 @@ It is built on the **OpenAPI Specification** — an industry-standard format for
 ## Project File Structure
 
 ```text
-journal-backend/
+backend/
   swagger/
     swagger.js      ← Generator script (you run this)
     swagger.json    ← Auto-generated output (never edit manually)

@@ -63,14 +63,14 @@ The user is now fully authenticated in our system!
 Here is a quick reference of the backend files and database logic changed to support this flow:
 
 ### 1. Database Schema
-* **File**: [userModel.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/journal-backend/models/userModel.js)
+* **File**: [userModel.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/backend/models/userModel.js)
 * **Changes**:
   * `password`: Updated property to `required: false` (since Google logins bypass manual passwords).
   * `googleId`: Added as a unique, sparse String schema property (stores Google's unique user ID).
   * `findOrCreateGoogleUser()`: Finds the user by `googleId`. If not found, checks by email/username (to link to an existing password account if applicable), or creates a new profile.
 
 ### 2. Backend Routes & Controllers
-* **Files**: [auth.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/journal-backend/routes/auth.js) & [authController.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/journal-backend/controllers/authController.js)
+* **Files**: [auth.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/backend/routes/auth.js) & [authController.js](file:///c:/Users/mrsan/Desktop/MyJournalApp/backend/controllers/authController.js)
 * **Changes**:
   * `GET /api/auth/google`: Generates a random `oauth_state` security token, saves it as an HTTP-only anti-forgery cookie, and redirects user to Google's consent screen.
   * `GET /api/auth/google/callback`: Clears the state cookie, validates the callback `state` token, exchanges the `code` for an access token via native Node `fetch`, fetches the user's profile info, calls the DB creator service, sets the local session `jwt` cookie, and redirects the browser back to React `/journals`.

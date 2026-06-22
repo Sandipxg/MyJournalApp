@@ -6,19 +6,19 @@ A personal journal web app built with React (frontend) and Node.js/Express (back
 
 ## Project Setup & Running Locally
 
-The project is split into the main directory (React Frontend) and `journal-backend/` (Express API server).
+The project is split into `frontend/` (React Frontend) and `backend/` (Express API server).
 
 ### 1. Backend Setup
 
 1. Navigate to the backend folder:
    ```bash
-   cd journal-backend
+   cd backend
    ```
 2. Install dependencies:
    ```bash
    npm install
    ```
-3. Create a `.env` file inside `journal-backend/` (copy from template if available):
+3. Create a `.env` file inside `backend/` (copy from template if available):
    ```env
    PORT=3000
    MONGO_URI=mongodb://localhost:27017/myjournal
@@ -41,15 +41,19 @@ The backend uses `swagger-ui-express` and `swagger-autogen` to generate interact
 
 ### 2. Frontend Setup
 
-1. From the project root folder, install dependencies:
+1. Navigate to the frontend folder:
+   ```bash
+   cd frontend
+   ```
+2. Install dependencies:
    ```bash
    npm install
    ```
-2. Start the Vite development server:
+3. Start the Vite development server:
    ```bash
    npm run dev
    ```
-3. Visit the frontend application at [http://localhost:5173/](http://localhost:5173/).
+4. Visit the frontend application at [http://localhost:5173/](http://localhost:5173/).
 
 ---
 
@@ -95,14 +99,15 @@ const CACHE_NAME = 'journal-cache-v2'; // Increment this whenever assets change!
 
 ```
 MyJournalApp/
-├── public/                 # Static PWA assets (manifest, sw.js, icons)
-├── src/                    # React Frontend Source
-│   ├── components/         # Reusable Components
-│   ├── context/            # Auth & Theme Global State
-│   ├── hooks/              # Custom React Hooks
-│   ├── pages/              # App Pages / Router Views
-│   └── services/           # API Services
-├── journal-backend/        # Node.js Express Backend
+├── frontend/               # React Frontend
+│   ├── public/             # Static PWA assets (manifest, sw.js, icons)
+│   ├── src/                # React Frontend Source
+│   │   ├── components/     # Reusable Components
+│   │   ├── context/        # Auth & Theme Global State
+│   │   ├── hooks/          # Custom React Hooks
+│   │   ├── pages/          # App Pages / Router Views
+│   │   └── services/       # API Services
+├── backend/                # Node.js Express Backend
 │   ├── controllers/        # Route logic
 │   ├── middleware/         # Auth verification & error handling
 │   ├── routes/             # Express routes

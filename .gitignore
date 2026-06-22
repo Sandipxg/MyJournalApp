@@ -7,9 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+**/node_modules/
+**/dist/
+**/dist-ssr/
 *.local
 
 # Editor directories and files
@@ -24,8 +24,10 @@ dist-ssr
 *.sw?
 
 # Local database
-journal-backend/db/users.json
-journal-backend/db/data.json
+backend/db/users.json
+backend/db/data.json
 
 # Local environment
-journal-backend/.env
+backend/.env
+frontend/.env
+frontend/.env.local

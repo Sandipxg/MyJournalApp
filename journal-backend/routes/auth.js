@@ -13,6 +13,13 @@ router.post('/logout', authController.logout)
 router.delete('/deleteaccount', validate(loginSchema), authController.deleteAccount)
 router.put('/reminder', auth, authController.updateReminder)
 
+// Google OAuth 2.0 routes
+router.get('/google', authController.googleAuth)
+router.get('/google/callback', authController.googleCallback)
+
+// Get current authenticated user
+router.get('/me', auth, authController.getMe)
+
 module.exports = router
 
 /* [ LOGOUT ROUTE ]

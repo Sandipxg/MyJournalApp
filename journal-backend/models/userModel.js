@@ -12,7 +12,12 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
     reminderTime: {
       type: String, // Format: "HH:MM", or null if notifications are disabled
@@ -47,7 +52,7 @@ async function findByUsername(username) {
 
 async function findByCredentials(username, password) {
   const user = await User.findOne({ username })
-  if (!user) return null
+  if (!user || !user.password) return null
   const isMatch = await bcrypt.compare(password, user.password)
   if (!isMatch) return null
   return toClientUser(user)
@@ -56,6 +61,24 @@ async function findByCredentials(username, password) {
 async function create(username, password) {
   const hashed = await bcrypt.hash(password, bcryptSaltRounds)
   const user = await User.create({ username, password: hashed })
+  return toClientUser(user)
+}
+
+async function findOrCreateGoogleUser(googleId, username) {
+  let user = await User.findOne({ googleId })
+  if (user) {
+    return toClientUser(user)
+  }
+
+  // Check if a user with that email/username already exists
+  const existingUser = await User.findOne({ username })
+  if (existingUser) {
+    existingUser.googleId = googleId
+    await existingUser.save()
+    return toClientUser(existingUser)
+  }
+
+  user = await User.create({ username, googleId })
   return toClientUser(user)
 }
 
@@ -72,4 +95,12 @@ async function updateReminder(userId, reminderTime, timezone) {
   return toClientUser(user)
 }
 
-module.exports = { findByUsername, findByCredentials, create, removeById, updateReminder, User }
+module.exports = {
+  findByUsername,
+  findByCredentials,
+  create,
+  findOrCreateGoogleUser,
+  removeById,
+  updateReminder,
+  User,
+}

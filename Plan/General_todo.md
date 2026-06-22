@@ -100,13 +100,13 @@ Use this file to track progress topic by topic.
 ## 12. Social Authentication (OAuth 2.0)
 
 Learn:
-- [ ] Learn OAuth 2.0 and OpenID Connect (OIDC) protocols
-- [ ] Understand Authorization Code flow (interaction between browser, backend, and OAuth provider)
+- [x] Learn OAuth 2.0 and OpenID Connect (OIDC) protocols
+- [x] Understand Authorization Code flow (interaction between browser, backend, and OAuth provider)
 
 Practice:
-- [ ] Create developer credentials on Google / GitHub Developer Console
-- [ ] Implement "Sign in with Google" redirect and callback endpoint using Passport.js or native OAuth SDK
-- [ ] Issue JWT for successfully authenticated social login users
+- [x] Create developer credentials on Google / GitHub Developer Console
+- [x] Implement "Sign in with Google" redirect and callback endpoint using Passport.js or native OAuth SDK
+- [x] Issue JWT for successfully authenticated social login users
 
 ## 13. Validation
 

@@ -1,4 +1,4 @@
-import { createContext, useState, useContext } from "react"
+import { createContext, useState, useContext, useEffect } from "react"
 
 const BASE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/auth`
 const AuthContext = createContext(null)
@@ -15,6 +15,26 @@ export function AuthProvider({ children }) {
     }
     return parsed
   })
+
+  useEffect(() => {
+    async function checkMe() {
+      try {
+        const res = await fetch(`${BASE_URL}/me`, { credentials: "include" })
+        if (res.ok) {
+          const data = await res.json()
+          localStorage.setItem("currentUser", JSON.stringify(data))
+          setCurrentUser(data)
+        } else {
+          // If server session is invalid/expired, clear local client cache
+          localStorage.removeItem("currentUser")
+          setCurrentUser(null)
+        }
+      } catch (err) {
+        console.warn("Auth check failed (offline/network error), retaining local cache:", err)
+      }
+    }
+    checkMe()
+  }, [])
 
   async function signup(username, password) {
     const res = await fetch(`${BASE_URL}/signup`, {

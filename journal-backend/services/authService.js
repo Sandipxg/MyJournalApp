@@ -30,4 +30,20 @@ async function updateReminder(userId, reminderTime, timezone) {
   return await userModel.updateReminder(userId, reminderTime, timezone)
 }
 
-module.exports = { signup, login , deleteAccount, updateReminder }
+async function findOrCreateGoogleUser(googleId, email) {
+  const user = await userModel.findOrCreateGoogleUser(googleId, email)
+  return { id: user.id, username: user.username }
+}
+
+async function getMe(userId) {
+  const user = await userModel.User.findById(userId)
+  if (!user) return null
+  return {
+    id: user._id.toString(),
+    username: user.username,
+    reminderTime: user.reminderTime,
+    timezone: user.timezone
+  }
+}
+
+module.exports = { signup, login, deleteAccount, updateReminder, findOrCreateGoogleUser, getMe }

@@ -3,7 +3,7 @@
 Have you ever looked at a feature branch and felt the immediate urge to run `git rm` on hundreds of lines of code? That is exactly how it felt when we transitioned **MyJournalApp** from a custom-coded JWT auth system to **Better Auth**.
 
 > [!TIP]
-> To view how the code actually looks with Better Auth, please visit our [Better Auth Quick Reference Code Snippets](file:///c:/Users/mrsan/Desktop/MyJournalApp/Notes/BetterAuth_CodeSnippets.md).
+> To view how the code actually looks with Better Auth, please visit [BetterAuth_CodeSnippets.md](file:///c:/Users/mrsan/Desktop/MyJournalApp/Notes/BetterAuth_CodeSnippets.md).
 
 Writing authentication from scratch is a classic developer rite of passage. You start by hashing passwords with `bcrypt`, sign a few JSON Web Tokens (JWTs), store them in cookies, write a custom verification middleware, and think: *"I've got this under control."* 
 

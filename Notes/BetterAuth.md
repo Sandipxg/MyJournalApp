@@ -16,13 +16,13 @@ To understand why this refactor was worth it, let's look at the architectural fl
 
 ```mermaid
 graph TD
-    subgraph Custom Session Flow (Old)
+    subgraph "Custom Session Flow (Old)"
         ClientA[React Client] -->|Manual Fetch Request| ExpressA[Express Server]
         ExpressA -->|Custom Verification Middleware| JWTMiddleware[jwt.verify / auth.js]
         JWTMiddleware -->|Verify JWT Cookie| DB1[(MongoDB)]
     end
 
-    subgraph Better Auth Flow (New)
+    subgraph "Better Auth Flow (New)"
         ClientB[React Client SDK] -->|Automatic Cookie Sessions| ExpressB[Express Server]
         ExpressB -->|Better Auth Catch-all Router| BARouter[app.all '/api/auth/*splat']
         BARouter -->|Mongo Adapter| DB2[(MongoDB)]
@@ -148,3 +148,8 @@ const session = sessionQuery?.data;
 Migrating to Better Auth allowed us to delete custom JWT configurations and manual Google Login integrations, replacing them with a standardized, secure configuration.
 
 For our application, this means less code to maintain, no manual encryption configurations, and a clean path to add security additions like **Two-Factor Authentication (2FA)** or **Passkeys** with just a single configuration flag.
+
+---
+
+## Learn More
+To explore additional configuration options, plugins, and guides, visit the official [Better Auth Documentation](https://better-auth.com/docs).

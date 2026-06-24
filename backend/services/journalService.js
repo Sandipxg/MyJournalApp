@@ -1,23 +1,21 @@
-const journalModel = require('../models/journalModel')
+import * as journalModel from '../models/journalModel.js'
 
-async function getByUser(userId) {
+export async function getByUser(userId) {
   return await journalModel.getByUser(userId)
 }
 
-async function getById(id) {
+export async function getById(id) {
   return await journalModel.getById(id)
 }
 
-async function create(userId, title) {
+export async function create(userId, title) {
   return await journalModel.create(userId, title)
 }
 
-async function update(id, changes) {
+export async function update(id, changes) {
   return await journalModel.update(id, changes)
 }
 
-async function remove(id) {
+export async function remove(id) {
   return await journalModel.remove(id)
 }
-
-module.exports = { getByUser, getById, create, update, remove }

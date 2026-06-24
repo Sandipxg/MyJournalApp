@@ -1,98 +1,99 @@
 import { createContext, useState, useContext, useEffect } from "react"
+import { authClient } from "../services/auth-client"
 
-const BASE_URL = `${import.meta.env.VITE_API_URL || "http://localhost:3000"}/api/auth`
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem("currentUser")
-    if (!saved) return null
-    const parsed = JSON.parse(saved)
-    // old sessions from before the backend had no id — drop them
-    if (!parsed.id) {
-      localStorage.removeItem("currentUser")
-      return null
-    }
-    return parsed
-  })
+  const [currentUser, setCurrentUser] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  // Use Better Auth's session observer
+  const sessionQuery = authClient.useSession()
+  const session = sessionQuery?.data
+  const isPending = sessionQuery?.isPending
 
   useEffect(() => {
-    async function checkMe() {
-      try {
-        const res = await fetch(`${BASE_URL}/me`, { credentials: "include" })
-        if (res.ok) {
-          const data = await res.json()
-          localStorage.setItem("currentUser", JSON.stringify(data))
-          setCurrentUser(data)
-        } else {
-          // If server session is invalid/expired, clear local client cache
-          localStorage.removeItem("currentUser")
-          setCurrentUser(null)
-        }
-      } catch (err) {
-        console.warn("Auth check failed (offline/network error), retaining local cache:", err)
+    if (!isPending) {
+      if (session?.user) {
+        setCurrentUser({
+          id: session.user.id,
+          email: session.user.email,
+          username: session.user.username || session.user.name || "",
+          reminderTime: session.user.reminderTime,
+          timezone: session.user.timezone,
+        })
+      } else {
+        setCurrentUser(null)
       }
+      setLoading(false)
     }
-    checkMe()
-  }, [])
+  }, [session, isPending])
 
-  async function signup(username, password) {
-    const res = await fetch(`${BASE_URL}/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-      credentials: "include",
+  async function signup(email, username, password) {
+    const { data, error } = await authClient.signUp.email({
+      email,
+      password,
+      username,
+      name: username,
     })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error)
 
-    localStorage.setItem("currentUser", JSON.stringify(data))
-    setCurrentUser(data)
+    if (error) {
+      throw new Error(error.message || "Failed to sign up")
+    }
+
+    if (data?.user) {
+      setCurrentUser({
+        id: data.user.id,
+        email: data.user.email,
+        username: data.user.username || data.user.name || "",
+        reminderTime: data.user.reminderTime,
+        timezone: data.user.timezone,
+      })
+    }
   }
 
-  async function login(username, password) {
-    const res = await fetch(`${BASE_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-      credentials: "include",
+  async function login(email, password) {
+    const { data, error } = await authClient.signIn.email({
+      email,
+      password
     })
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error)
 
-    // Store only the user object for consistency with signup
-    const userToSave = data.user
-    localStorage.setItem("currentUser", JSON.stringify(userToSave))
-    setCurrentUser(userToSave)
+    if (error) {
+      throw new Error(error.message || "Failed to log in")
+    }
+
+    if (data?.user) {
+      setCurrentUser({
+        id: data.user.id,
+        email: data.user.email,
+        username: data.user.username || data.user.name || "",
+        reminderTime: data.user.reminderTime,
+        timezone: data.user.timezone,
+      })
+    }
   }
 
   async function logout() {
-    try {
-      await fetch(`${BASE_URL}/logout`, {
-        method: "POST",
-        credentials: "include",
-      })
-    } catch (err) {
-      console.error("Failed to call logout on backend:", err)
+    const { error } = await authClient.signOut()
+    if (error) {
+      console.error("Failed to sign out on Better Auth:", error)
     }
-    localStorage.removeItem("currentUser")
     setCurrentUser(null)
   }
 
-  async function deleteAccount(username, password) {
-    const res = await fetch(`${BASE_URL}/deleteaccount`, {
+  async function deleteAccount(password) {
+    const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/deleteaccount`, {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ password }),
       credentials: "include",
     })
 
     const data = await res.json()
     if (!res.ok) throw new Error(data.error)
 
-    localStorage.removeItem("currentUser")
+    await authClient.signOut()
     setCurrentUser(null)
-
     return data
   }
 
@@ -106,15 +107,22 @@ export function AuthProvider({ children }) {
     const data = await res.json()
     if (!res.ok) throw new Error(data.error || 'Failed to update reminder settings')
 
-    const updatedUser = { ...currentUser, reminderTime: data.reminderTime, timezone: data.timezone }
-    localStorage.setItem('currentUser', JSON.stringify(updatedUser))
+    const updatedUser = { 
+      ...currentUser, 
+      reminderTime: data.reminderTime, 
+      timezone: data.timezone 
+    }
     setCurrentUser(updatedUser)
     return updatedUser
   }
 
   return (
-    <AuthContext.Provider value={{ currentUser, signup, login, logout, deleteAccount, updateReminderSettings }}>
-      {children}
+    <AuthContext.Provider value={{ currentUser, loading, signup, login, logout, deleteAccount, updateReminderSettings }}>
+      {loading ? (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+          <div className="w-12 h-12 border-4 border-purple-200 dark:border-purple-900 border-t-purple-600 dark:border-t-purple-400 rounded-full animate-spin"></div>
+        </div>
+      ) : children}
     </AuthContext.Provider>
   )
 }

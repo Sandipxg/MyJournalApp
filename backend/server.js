@@ -1,12 +1,15 @@
-require('dotenv').config()
+import 'dotenv/config'
+import connectDb from './config/db.js'
+import { initScheduler } from './services/cronService.js'
 
-const app = require('./app')
 const PORT = process.env.PORT || 3000
-const connectDb = require('./config/db')
-const { initScheduler } = require('./services/cronService')
 
 async function startServer() {
+    // 1. Ensure DB connection is active before loading the app and Better Auth config
     await connectDb()
+
+    // 2. Dynamically import app so that mongoose.connection is fully populated
+    const { default: app } = await import('./app.js')
 
     // Initialize the daily reminder scheduled cron service
     initScheduler()

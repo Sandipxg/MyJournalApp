@@ -1,6 +1,6 @@
-const express = require('express')
-const pushController = require('../controllers/pushController')
-const auth = require('../middleware/auth')
+import express from 'express'
+import * as pushController from '../controllers/pushController.js'
+import auth from '../middleware/auth.js'
 
 const router = express.Router()
 
@@ -19,4 +19,4 @@ router.post('/unsubscribe', pushController.unsubscribe)
 // Trigger a test push notification to all stored devices for the logged-in user
 router.post('/send', pushController.sendTestNotification)
 
-module.exports = router
+export default router

@@ -1,37 +1,11 @@
-const express = require('express')
-const authController = require('../controllers/authController')
-
-const validate = require('../middleware/validate')
-const { signupSchema, loginSchema } = require('../validators/authValidator')
-const auth = require('../middleware/auth')
+import express from 'express'
+import * as authController from '../controllers/authController.js'
+import auth from '../middleware/auth.js'
 
 const router = express.Router()
 
-router.post('/signup', validate(signupSchema), authController.signup)
-router.post('/login', validate(loginSchema), authController.login)
-router.post('/logout', authController.logout)
-router.delete('/deleteaccount', validate(loginSchema), authController.deleteAccount)
+router.delete('/deleteaccount', auth, authController.deleteAccount)
 router.put('/reminder', auth, authController.updateReminder)
-
-// Google OAuth 2.0 routes
-router.get('/google', authController.googleAuth)
-router.get('/google/callback', authController.googleCallback)
-
-// Get current authenticated user
 router.get('/me', auth, authController.getMe)
 
-module.exports = router
-
-/* [ LOGOUT ROUTE ]
-A backend /logout route is only needed when the backend has something to invalidate, 
-for example:
-
---> server-side sessions/cookies
---> refresh tokens
---> JWT blocklist/revocation
---> database session records
-
-In your app’s current setup,
- logout means: delete the saved user from the frontend and redirect to login.
- No backend route required.
-*/
+export default router

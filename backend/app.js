@@ -1,15 +1,21 @@
-const express = require('express')
-const cors = require('cors')
-const helmet = require('helmet')
-const cookieParser = require('cookie-parser')
-const rateLimit = require('express-rate-limit')
-const swaggerUi = require('swagger-ui-express')
-const swaggerDocument = require('./swagger/swagger.json')
+import express from 'express'
+import cors from 'cors'
+import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
+import rateLimit from 'express-rate-limit'
+import swaggerUi from 'swagger-ui-express'
+import { createRequire } from 'module'
+import { toNodeHandler } from 'better-auth/node'
 
-const authRoutes = require('./routes/auth')
-const journalRoutes = require('./routes/journals')
-const pushRoutes = require('./routes/push')
-const { notFound, errorHandler } = require('./middleware/errorHandler')
+import { auth } from './config/auth.js'
+import authRoutes from './routes/auth.js'
+import journalRoutes from './routes/journals.js'
+import pushRoutes from './routes/push.js'
+import { notFound, errorHandler } from './middleware/errorHandler.js'
+
+// Since swagger.json is a JSON file, using createRequire is the standard ESM way to import JSON
+const require = createRequire(import.meta.url)
+const swaggerDocument = require('./swagger/swagger.json')
 
 // Global limiter — all routes: 100 requests per 15 minutes per IP
 const globalLimiter = rateLimit({
@@ -50,17 +56,27 @@ app.use(cors({
   credentials: true
 }))
 
+// Custom auth endpoints MUST be defined before the Better Auth catch-all handler.
+// This allows Express to intercept our custom actions (reminder settings, deleteaccount, etc.)
+// and let Better Auth handle the rest (sign-in, sign-up, sign-out, social logins).
 app.use(express.json())
 app.use(cookieParser())
+
+app.use('/api/auth/me', authLimiter, authRoutes)
+app.use('/api/auth/reminder', authLimiter, authRoutes)
+app.use('/api/auth/deleteaccount', authLimiter, authRoutes)
+
+// Mount Better Auth catch-all endpoint.
+// We disable parsing of json for this path as Better Auth reads req stream natively.
+app.all('/api/auth/*splat', toNodeHandler(auth))
 
 // Serve interactive Swagger API docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
 
-app.use('/api/auth', authLimiter, authRoutes)
 app.use('/api/journals', journalRoutes)
 app.use('/api/push', pushRoutes)
 
 app.use(notFound)
 app.use(errorHandler)
 
-module.exports = app
+export default app

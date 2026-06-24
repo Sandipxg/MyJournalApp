@@ -1,8 +1,8 @@
-function notFound(req, res, next) {
+export function notFound(req, res, next) {
   res.status(404).json({ error: 'Route not found' })
 }
 
-function errorHandler(err, req, res, next) {
+export function errorHandler(err, req, res, next) {
   const statusCode = err.statusCode || 500
   const message = err.message || 'Something went wrong'
 
@@ -13,5 +13,3 @@ function errorHandler(err, req, res, next) {
 
   res.status(statusCode).json(response)
 }
-
-module.exports = { notFound, errorHandler }

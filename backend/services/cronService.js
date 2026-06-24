@@ -1,7 +1,7 @@
-const cron = require('node-cron')
-const webpush = require('web-push')
-const { User } = require('../models/userModel')
-const PushSubscription = require('../models/pushSubscriptionModel')
+import cron from 'node-cron'
+import webpush from 'web-push'
+import { User } from '../models/userModel.js'
+import PushSubscription from '../models/pushSubscriptionModel.js'
 
 // Configure web-push with VAPID details from environment variables
 webpush.setVapidDetails(
@@ -14,7 +14,7 @@ webpush.setVapidDetails(
  * Initializes the background cron scheduler.
  * Runs once every minute (* * * * *) to scan user preferences and trigger push notifications.
  */
-function initScheduler() {
+export function initScheduler() {
   console.log('[Cron Service] Initializing Daily Reminder Cron Job (Every minute)')
 
   // Schedule task to run at the start of every minute
@@ -46,11 +46,11 @@ function initScheduler() {
 
           // If the user's local time matches their target reminderTime, dispatch notification
           if (userLocalTime === user.reminderTime) {
-            console.log(`[Cron Service] Time matches for user: ${user.username} (${userLocalTime})`)
+            console.log(`[Cron Service] Time matches for user: ${user.username || user.name} (${userLocalTime})`)
             await sendReminderToUser(user._id)
           }
         } catch (timezoneError) {
-          console.error(`[Cron Service] Time conversion failed for user ${user.username} with timezone ${user.timezone}:`, timezoneError)
+          console.error(`[Cron Service] Time conversion failed for user ${user.username || user.name} with timezone ${user.timezone}:`, timezoneError)
         }
       }
     } catch (dbError) {
@@ -102,5 +102,3 @@ async function sendReminderToUser(userId) {
     }
   })
 }
-
-module.exports = { initScheduler }

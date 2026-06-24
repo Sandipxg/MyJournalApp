@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "../context/AuthContext"
 import useQuote from "../hooks/useQuote"
+import { authClient } from "../services/auth-client"
 
 function LoginPage() {
   const [isSignup, setIsSignup] = useState(false)
@@ -17,14 +18,25 @@ function LoginPage() {
     setAuthError("")
     try {
       if (isSignup) {
-        await signup(data.username, data.password)
+        await signup(data.email, data.username, data.password)
       } else {
-        await login(data.username, data.password)
+        await login(data.email, data.password)
       }
       reset()
       navigate("/journals")
     } catch (err) {
       setAuthError(err.message)
+    }
+  }
+
+  async function handleGoogleLogin() {
+    try {
+      await authClient.signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/journals`
+      })
+    } catch (err) {
+      setAuthError(err.message || "Failed to login with Google")
     }
   }
 
@@ -48,15 +60,34 @@ function LoginPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
             <input
-              {...register("username", { required: "Username is required" })}
+              {...register("email", { 
+                required: "Email is required",
+                pattern: {
+                  value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]/,
+                  message: "Invalid email address"
+                }
+              })}
               type="text"
-              placeholder="Enter your username"
+              placeholder="Enter your email"
               className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-lg text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
             />
-            {errors.username && <p className="text-red-500 text-xs">{errors.username.message}</p>}
+            {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
           </div>
+
+          {isSignup && (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
+              <input
+                {...register("username", { required: "Username is required" })}
+                type="text"
+                placeholder="Enter your username"
+                className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 rounded-lg text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              {errors.username && <p className="text-red-500 text-xs">{errors.username.message}</p>}
+            </div>
+          )}
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
@@ -93,9 +124,7 @@ function LoginPage() {
 
         <button
           type="button"
-          onClick={() => {
-            window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/auth/google`
-          }}
+          onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">

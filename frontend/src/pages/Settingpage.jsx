@@ -132,7 +132,7 @@ function SettingsPage() {
     setIsDeleting(true)
 
     try {
-      await deleteAccount(username, password)
+      await deleteAccount(password)
       navigate("/auth")
     } catch (err) {
       setDeleteError(err.message)
@@ -362,17 +362,7 @@ function SettingsPage() {
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="px-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-            />
-          </div>
-
+        <div className="max-w-sm">
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
             <input

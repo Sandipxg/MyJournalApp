@@ -1,5 +1,5 @@
-const dns = require('dns');
-const mongoose = require('mongoose');
+import dns from 'dns';
+import mongoose from 'mongoose';
 
 function configureDnsServers() {
     if (!process.env.MONGODB_DNS_SERVERS) {
@@ -26,4 +26,4 @@ async function connectDb(){
     console.log('Connected to MongoDB');
 }
 
-module.exports = connectDb;
+export default connectDb;

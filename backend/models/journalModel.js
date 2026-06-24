@@ -1,5 +1,5 @@
-const mongoose = require('mongoose')
-const AppError = require('../utils/AppError')
+import mongoose from 'mongoose'
+import AppError from '../utils/AppError.js'
 
 const journalSchema = new mongoose.Schema(
   {
@@ -41,19 +41,19 @@ function toClientJournal(journal) {
   }
 }
 
-async function getByUser(userId) {
+export async function getByUser(userId) {
   const journals = await Journal.find({ userId }).sort({ createdAt: -1 })
   return journals.map(toClientJournal)
 }
 
-async function getById(id) {
+export async function getById(id) {
   assertValidJournalId(id)
   const journal = await Journal.findById(id)
   if (!journal) throw new AppError('Journal not found', 404)
   return toClientJournal(journal)
 }
 
-async function create(userId, title) {
+export async function create(userId, title) {
   const journal = await Journal.create({
     userId,
     title,
@@ -62,7 +62,7 @@ async function create(userId, title) {
   return toClientJournal(journal)
 }
 
-async function update(id, changes) {
+export async function update(id, changes) {
   assertValidJournalId(id)
   const allowedChanges = {}
   if (changes.title !== undefined) allowedChanges.title = changes.title
@@ -76,14 +76,14 @@ async function update(id, changes) {
   return toClientJournal(journal)
 }
 
-async function remove(id) {
+export async function remove(id) {
   assertValidJournalId(id)
   const journal = await Journal.findByIdAndDelete(id)
   if (!journal) throw new AppError('Journal not found', 404)
 }
 
-async function removeByUser(userId) {
+export async function removeByUser(userId) {
   await Journal.deleteMany({ userId })
 }
 
-module.exports = { getByUser, getById, create, update, remove, removeByUser }
+export { Journal }

@@ -1,10 +1,8 @@
-const express = require('express')
-const journalController = require('../controllers/journalController')
-
-const auth = require('../middleware/auth')
-
-const validate = require('../middleware/validate')
-const { createJournalSchema, updateJournalSchema } = require('../validators/journalValidator')
+import express from 'express'
+import * as journalController from '../controllers/journalController.js'
+import auth from '../middleware/auth.js'
+import validate from '../middleware/validate.js'
+import { createJournalSchema, updateJournalSchema } from '../validators/journalValidator.js'
 
 const router = express.Router()
 
@@ -16,4 +14,4 @@ router.post('/', validate(createJournalSchema), journalController.create)
 router.put('/:id', validate(updateJournalSchema), journalController.update)
 router.delete('/:id', journalController.remove)
 
-module.exports = router
+export default router;

@@ -1,21 +1,16 @@
-const { z } = require('zod')
+import { z } from 'zod'
 
-const createJournalSchema = z.object({
+export const createJournalSchema = z.object({
   title: z.string()
     .min(1, 'Title cannot be empty')
     .max(100, 'Title cannot exceed 100 characters')
     .trim()
 })
 
-const updateJournalSchema = z.object({
+export const updateJournalSchema = z.object({
   title: z.string()
     .min(1, 'Title cannot be empty')
     .max(100, 'Title cannot exceed 100 characters')
     .trim()
     .optional()
 })
-
-module.exports = {
-  createJournalSchema,
-  updateJournalSchema
-}

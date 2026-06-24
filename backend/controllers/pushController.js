@@ -1,6 +1,6 @@
-const webpush = require('web-push')
-const PushSubscription = require('../models/pushSubscriptionModel')
-const AppError = require('../utils/AppError')
+import webpush from 'web-push'
+import PushSubscription from '../models/pushSubscriptionModel.js'
+import AppError from '../utils/AppError.js'
 
 // Configure web-push with VAPID details from environment variables
 // VAPID keys authenticate our server to the browser push services
@@ -14,7 +14,7 @@ webpush.setVapidDetails(
  * Exposes the public VAPID key so the client-side code can fetch it
  * dynamically instead of hardcoding.
  */
-async function getVapidPublicKey(req, res) {
+export async function getVapidPublicKey(req, res) {
   const publicKey = process.env.VAPID_PUBLIC_KEY
   if (!publicKey) {
     throw new AppError('VAPID public key not configured on server', 500)
@@ -26,7 +26,7 @@ async function getVapidPublicKey(req, res) {
  * Stores a new push subscription for the logged-in user.
  * If the subscription already exists for this endpoint, it will update it.
  */
-async function subscribe(req, res) {
+export async function subscribe(req, res) {
   const { endpoint, keys } = req.body
   const userId = req.userId
 
@@ -52,7 +52,7 @@ async function subscribe(req, res) {
 /**
  * Deletes a push subscription when the user disables notifications in the UI.
  */
-async function unsubscribe(req, res) {
+export async function unsubscribe(req, res) {
   const { endpoint } = req.body
   const userId = req.userId
 
@@ -74,7 +74,7 @@ async function unsubscribe(req, res) {
  * Sends a test push notification to all devices registered by the logged-in user.
  * Helps verify end-to-end integration instantly.
  */
-async function sendTestNotification(req, res) {
+export async function sendTestNotification(req, res) {
   const userId = req.userId
 
   // Fetch all active subscriptions registered for this user
@@ -126,11 +126,4 @@ async function sendTestNotification(req, res) {
     totalSubscribers: subscriptions.length,
     successfulDeliveries: sentCount
   })
-}
-
-module.exports = {
-  getVapidPublicKey,
-  subscribe,
-  unsubscribe,
-  sendTestNotification
 }

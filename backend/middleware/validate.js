@@ -1,4 +1,4 @@
-const AppError = require('../utils/AppError')
+import AppError from '../utils/AppError.js'
 
 /**
  * Express middleware that validates the request body against a Zod schema.
@@ -22,4 +22,4 @@ function validate(schema) {
   }
 }
 
-module.exports = validate
+export default validate;

@@ -1,49 +1,40 @@
-const AppError = require('../utils/AppError')
-const userModel = require('../models/userModel')
-const journalModel = require('../models/journalModel')
+import { auth } from '../config/auth.js'
+import * as userModel from '../models/userModel.js'
+import * as journalModel from '../models/journalModel.js'
+import AppError from '../utils/AppError.js'
 
-async function signup(username, password) {
-  if (await userModel.findByUsername(username)) {
-    throw new AppError('Username already taken', 409)
+export async function deleteAccount(userId, password, headers) {
+  try {
+    const verification = await auth.api.verifyPassword({
+      body: { password },
+      headers
+    })
+
+    if (!verification || !verification.status) {
+      throw new AppError('Invalid password', 401)
+    }
+  } catch (err) {
+    throw new AppError('Invalid password', 401)
   }
-  const user = await userModel.create(username, password)
-  return { id: user.id, username: user.username }
+
+  await userModel.removeById(userId)
+  await journalModel.removeByUser(userId)
+
+  return { message: 'Account deleted' }
 }
 
-async function login(username, password) {
-  const user = await userModel.findByCredentials(username, password)
-  if (!user) throw new AppError('Invalid username or password', 401)
-  return { id: user.id, username: user.username }
-}
-
-async function deleteAccount(username, password) {
-  const user = await userModel.findByCredentials(username, password)
-  if (!user) throw new AppError('Invalid username or password', 401)
-
-  await userModel.removeById(user.id)
-  await journalModel.removeByUser(user.id)
-
-  return { message: 'Account deleted'  }
-}
-
-async function updateReminder(userId, reminderTime, timezone) {
+export async function updateReminder(userId, reminderTime, timezone) {
   return await userModel.updateReminder(userId, reminderTime, timezone)
 }
 
-async function findOrCreateGoogleUser(googleId, email) {
-  const user = await userModel.findOrCreateGoogleUser(googleId, email)
-  return { id: user.id, username: user.username }
-}
-
-async function getMe(userId) {
+export async function getMe(userId) {
   const user = await userModel.User.findById(userId)
   if (!user) return null
   return {
     id: user._id.toString(),
-    username: user.username,
+    username: user.username || user.name || '',
+    email: user.email,
     reminderTime: user.reminderTime,
     timezone: user.timezone
   }
 }
-
-module.exports = { signup, login, deleteAccount, updateReminder, findOrCreateGoogleUser, getMe }

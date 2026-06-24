@@ -1,32 +1,26 @@
-const { verify } = require('../services/jwtService')
-const AppError = require('../utils/AppError')
+import { auth } from "../config/auth.js";
+import AppError from "../utils/AppError.js";
 
 /**
- * Express middleware that checks for a Bearer token, verifies it, and adds
- * `req.userId` for downstream handlers.
+ * Express middleware that checks for a Better Auth session,
+ * and adds `req.userId` for downstream handlers.
  */
-function auth(req, res, next) {
-  let token = req.cookies?.jwt
-
-  if (!token) {
-    const authHeader = req.headers.authorization
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      token = authHeader.split(' ')[1]
-    }
-  }
-
-  if (!token) {
-    return next(new AppError('Missing or malformed token', 401))
-  }
-
+async function authMiddleware(req, res, next) {
   try {
-    const payload = verify(token)
-    // payload is whatever we signed; we expect { userId }
-    req.userId = payload.userId
-    next()
+    const session = await auth.api.getSession({
+      headers: req.headers
+    });
+
+    if (!session || !session.user) {
+      return next(new AppError('Unauthorized: Missing or invalid session', 401));
+    }
+
+    req.userId = session.user.id;
+    req.session = session;
+    next();
   } catch (err) {
-    return next(new AppError('Invalid or expired token', 401))
+    return next(new AppError('Unauthorized: Session verification failed', 401));
   }
 }
 
-module.exports = auth
+export default authMiddleware;

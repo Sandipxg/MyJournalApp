@@ -165,9 +165,21 @@ Practice:
 
 ## 19. PWA (Progressive Web App)
 
-- [ ] Refer to the detailed checklist in [PWA_todo.md](./PWA_todo.md) to implement offline capabilities, background sync, and install experience.
+- [x] Refer to the detailed checklist in [PWA_todo.md](./PWA_todo.md) to implement offline capabilities, background sync, and install experience.
 
-## 20. Docker
+
+## 20. Better-Auth Library
+
+- [x] Convert Express backend to ES Modules to natively support Better Auth imports
+- [x] Configure Better Auth server instance with MongoDB adapter
+- [x] Replace manual JWT generation, token verification, and cookie handling with Better Auth automated sessions
+- [x] Replace manual bcrypt hashing & verification with Better Auth's built-in secure credentials system
+- [x] Remove custom endpoints for login, signup, logout, and raw Google OAuth redirects, routing all through the catch-all router
+- [x] Refactor frontend to use standard email-based login, username signup, and Google social login via the client SDK
+- [x] Integrate `authClient.useSession()` React hooks to replace custom local storage session caching and polling
+
+
+## 21. Docker
 
 Learn:
 - [ ] Learn Docker basics (Images, Containers, Volumes, and Networking)

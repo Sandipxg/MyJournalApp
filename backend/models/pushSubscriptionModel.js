@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 // Schema representing a web push subscription for a user device
 const pushSubscriptionSchema = new mongoose.Schema(
@@ -31,4 +31,4 @@ const pushSubscriptionSchema = new mongoose.Schema(
 
 const PushSubscription = mongoose.model('PushSubscription', pushSubscriptionSchema)
 
-module.exports = PushSubscription
+export default PushSubscription

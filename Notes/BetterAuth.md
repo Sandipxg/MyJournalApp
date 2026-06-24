@@ -156,3 +156,4 @@ For our application, this means less code to maintain, no manual encryption conf
 
 ## Learn More
 To explore additional configuration options, plugins, and guides, visit the official [Better Auth Documentation](https://better-auth.com/docs).
+YT --> https://www.youtube.com/watch?v=2c-0_G3vpU8 ( video teaches from documentation )

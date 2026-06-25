@@ -12,6 +12,16 @@ export const auth = betterAuth({
     client,
     // Using Better Auth's default singular collection names: user, session, account
   }),
+  account: {
+    storeStateStrategy: "database",
+  },
+  advanced: {
+    useSecureCookies: process.env.NODE_ENV === 'production',
+    defaultCookieAttributes: process.env.NODE_ENV === 'production' ? {
+      sameSite: "none",
+      secure: true,
+    } : {},
+  },
   emailAndPassword: {
     enabled: true,
   },

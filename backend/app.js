@@ -59,19 +59,25 @@ app.use(cors({
 // Custom auth endpoints MUST be defined before the Better Auth catch-all handler.
 // This allows Express to intercept our custom actions (reminder settings, deleteaccount, etc.)
 // and let Better Auth handle the rest (sign-in, sign-up, sign-out, social logins).
-app.use(express.json())
-app.use(cookieParser())
-
-app.use('/api/auth/me', authLimiter, authRoutes)
-app.use('/api/auth/reminder', authLimiter, authRoutes)
-app.use('/api/auth/deleteaccount', authLimiter, authRoutes)
+app.use('/api/auth/me', authLimiter, express.json(), cookieParser(), authRoutes)
+app.use('/api/auth/reminder', authLimiter, express.json(), cookieParser(), authRoutes)
+app.use('/api/auth/deleteaccount', authLimiter, express.json(), cookieParser(), authRoutes)
 
 // Mount Better Auth catch-all endpoint.
 // We disable parsing of json for this path as Better Auth reads req stream natively.
 app.all('/api/auth/*splat', toNodeHandler(auth))
 
+// Root health check route
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Journal API is running' })
+})
+
 // Serve interactive Swagger API docs
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument))
+
+// Global middlewares for routes mounted below
+app.use(express.json())
+app.use(cookieParser())
 
 app.use('/api/journals', journalRoutes)
 app.use('/api/push', pushRoutes)

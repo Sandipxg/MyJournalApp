@@ -8,7 +8,8 @@ import { createRequire } from 'module'
 import { toNodeHandler } from 'better-auth/node'
 
 import { auth } from './config/auth.js'
-import authRoutes from './routes/auth.js'
+import * as authController from './controllers/authController.js'
+import authMiddleware from './middleware/auth.js'
 import journalRoutes from './routes/journals.js'
 import pushRoutes from './routes/push.js'
 import { notFound, errorHandler } from './middleware/errorHandler.js'
@@ -59,9 +60,8 @@ app.use(cors({
 // Custom auth endpoints MUST be defined before the Better Auth catch-all handler.
 // This allows Express to intercept our custom actions (reminder settings, deleteaccount, etc.)
 // and let Better Auth handle the rest (sign-in, sign-up, sign-out, social logins).
-app.use('/api/auth/me', authLimiter, express.json(), cookieParser(), authRoutes)
-app.use('/api/auth/reminder', authLimiter, express.json(), cookieParser(), authRoutes)
-app.use('/api/auth/deleteaccount', authLimiter, express.json(), cookieParser(), authRoutes)
+app.put('/api/auth/reminder', authLimiter, express.json(), cookieParser(), authMiddleware, authController.updateReminder)
+app.delete('/api/auth/deleteaccount', authLimiter, express.json(), cookieParser(), authMiddleware, authController.deleteAccount)
 
 // Mount Better Auth catch-all endpoint.
 // We disable parsing of json for this path as Better Auth reads req stream natively.

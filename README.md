@@ -61,7 +61,6 @@ The project is split into `frontend/` (React Frontend) and `backend/` (Express A
    BETTER_AUTH_URL=http://localhost:3000 # Backend server URL
    GOOGLE_CLIENT_ID=your_google_oauth_client_id
    GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
-   GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/callback/google
    ```
 4. Run the development server:
    ```bash

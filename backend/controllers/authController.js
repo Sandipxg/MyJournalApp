@@ -42,10 +42,3 @@ export async function updateReminder(req, res) {
   res.json(updatedUser)
 }
 
-export async function getMe(req, res) {
-  const user = await authService.getMe(req.userId)
-  if (!user) {
-    throw new AppError('User not found', 404)
-  }
-  res.json(user)
-}

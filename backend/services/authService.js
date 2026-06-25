@@ -27,14 +27,3 @@ export async function updateReminder(userId, reminderTime, timezone) {
   return await userModel.updateReminder(userId, reminderTime, timezone)
 }
 
-export async function getMe(userId) {
-  const user = await userModel.User.findById(userId)
-  if (!user) return null
-  return {
-    id: user._id.toString(),
-    username: user.username || user.name || '',
-    email: user.email,
-    reminderTime: user.reminderTime,
-    timezone: user.timezone
-  }
-}

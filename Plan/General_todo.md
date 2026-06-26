@@ -182,10 +182,10 @@ Practice:
 ## 21. Docker
 
 Learn:
-- [ ] Learn Docker basics (Images, Containers, Volumes, and Networking)
-- [ ] Understand the difference between a `Dockerfile` and `docker-compose.yml`
+- [x] Learn Docker basics (Images, Containers, Volumes, and Networking)
+- [x] Understand the difference between a `Dockerfile` and `docker-compose.yml`
 
 Practice:
-- [ ] Create a `Dockerfile` for the Node.js backend
-- [ ] Create a `Dockerfile` for the React frontend
-- [ ] Write a `docker-compose.yml` to spin up the frontend, backend, and MongoDB database together locally
+- [x] Create a `Dockerfile` for the Node.js backend
+- [x] Create a `Dockerfile` for the React frontend
+- [x] Write a `docker-compose.yml` to spin up the frontend, backend, and MongoDB database together locally

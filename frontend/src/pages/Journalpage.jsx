@@ -102,23 +102,69 @@ function JournalPage() {
   )
 
   return (
-    <div>
-      <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">My Journal</h1>
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-      <JournalForm
-        addJournal={addJournal}
-        editingJournal={editingJournal}
-        updateJournal={handleUpdate}
-      />
-      <input
-        type="text"
-        aria-label="Search journals"
-        placeholder="Search journals..."
-        value={searchText}
-        onChange={(e) => setSearchText(e.target.value)}
-        className="w-full mt-4 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-400"
-      />
-      <div className="mt-6">
+    <div className="space-y-6">
+      
+      {/* Header Section */}
+      <div className="border-b border-[#f3f0f7] dark:border-gray-800 pb-5">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-gray-100 tracking-tight">
+          My Journals
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Write, reflect and grow every day
+        </p>
+      </div>
+
+      {error && (
+        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 rounded-2xl p-4 text-sm font-medium">
+          {error}
+        </div>
+      )}
+
+      {/* Add Journal Form */}
+      <div className="bg-white/40 dark:bg-gray-800/20 p-1.5 rounded-2xl">
+        <JournalForm
+          addJournal={addJournal}
+          editingJournal={editingJournal}
+          updateJournal={handleUpdate}
+        />
+      </div>
+
+      {/* Search and Filters group */}
+      <div className="flex gap-3 w-full mt-4">
+        {/* Search Input with search icon */}
+        <div className="relative flex-1">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+          <input
+            type="text"
+            aria-label="Search journals"
+            placeholder="Search journals..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-gray-800 border border-[#e2def0] dark:border-gray-700 rounded-2xl text-base text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all shadow-[0_2px_12px_rgba(0,0,0,0.015)]"
+          />
+        </div>
+
+        {/* Filter Dropdown */}
+        <div className="relative shrink-0">
+          <div className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-gray-800 border border-[#e2def0] dark:border-gray-700 rounded-2xl text-sm font-bold text-gray-600 dark:text-gray-300 shadow-[0_2px_12px_rgba(0,0,0,0.015)] select-none">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            <span className="hidden sm:inline">All journals</span>
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      {/* List of Entries */}
+      <div className="mt-4 flex-1">
         <ErrorBoundary>
           <JournalList
             journals={filtered}
@@ -127,6 +173,9 @@ function JournalPage() {
           />
         </ErrorBoundary>
       </div>
+
+
+
     </div>
   )
 }

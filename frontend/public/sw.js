@@ -270,6 +270,75 @@ function updateOfflineAction(action) {
 }
 
 /**
+ * Compacts the offline actions queue by merging/removing redundant actions.
+ * Rules:
+ *  - CREATE -> DELETE = discard both
+ *  - CREATE -> UPDATE = merge payload into CREATE, discard UPDATE
+ *  - UPDATE -> UPDATE = keep only the latest UPDATE, merging updates
+ *  - UPDATE -> DELETE = discard UPDATE, keep only DELETE
+ */
+function compactQueue(actions) {
+  const entryMap = new Map() // maps entryId -> action
+  const discardedActionIds = new Set() // IDs of actions to delete from DB
+  
+  for (const action of actions) {
+    const entryId = action.entryId
+    
+    if (!entryMap.has(entryId)) {
+      entryMap.set(entryId, { ...action })
+    } else {
+      const prior = entryMap.get(entryId)
+      if (prior.action === 'CREATE') {
+        if (action.action === 'UPDATE') {
+          // Merge payload into the CREATE action
+          prior.payload = { ...prior.payload, ...action.payload }
+          discardedActionIds.add(action.id)
+        } else if (action.action === 'DELETE') {
+          // CREATE followed by DELETE: discard both
+          discardedActionIds.add(prior.id)
+          discardedActionIds.add(action.id)
+          entryMap.delete(entryId)
+        }
+      } else if (prior.action === 'UPDATE') {
+        if (action.action === 'UPDATE') {
+          // UPDATE followed by UPDATE: keep only the latest
+          prior.payload = { ...prior.payload, ...action.payload }
+          discardedActionIds.add(action.id)
+        } else if (action.action === 'DELETE') {
+          // UPDATE followed by DELETE: discard UPDATE, keep only DELETE
+          discardedActionIds.add(prior.id)
+          prior.action = 'DELETE'
+          prior.payload = null
+          discardedActionIds.add(action.id)
+        }
+      } else if (prior.action === 'DELETE') {
+        if (action.action === 'CREATE') {
+          entryMap.set(entryId, { ...action })
+          discardedActionIds.add(prior.id)
+        }
+      }
+    }
+  }
+
+  // Generate compacted actions list preserving chronological order of their first occurrence
+  const compactedActions = []
+  const entryStateSeen = new Set()
+  
+  for (const action of actions) {
+    if (discardedActionIds.has(action.id)) {
+      continue
+    }
+    const entryId = action.entryId
+    if (entryMap.has(entryId) && !entryStateSeen.has(entryId)) {
+      compactedActions.push(entryMap.get(entryId))
+      entryStateSeen.add(entryId)
+    }
+  }
+  
+  return { compactedActions, discardedActionIds }
+}
+
+/**
  * Replays all queued actions to the backend in chronological order.
  */
 async function replayOfflineActions() {
@@ -280,10 +349,25 @@ async function replayOfflineActions() {
     return
   }
 
+  // Compact the offline queue to merge redundant actions
+  const { compactedActions, discardedActionIds } = compactQueue(actions)
+
+  if (discardedActionIds.size > 0) {
+    console.log(`[Service Worker] Compacting queue: deleting ${discardedActionIds.size} redundant actions from DB`)
+    for (const discardedId of discardedActionIds) {
+      await deleteOfflineAction(discardedId)
+    }
+  }
+
+  if (compactedActions.length === 0) {
+    console.log('[Service Worker] Queue is empty after compaction.')
+    return
+  }
+
   // Map to link temporary IDs created offline with database MongoDB IDs
   const idMap = new Map()
 
-  for (const action of actions) {
+  for (const action of compactedActions) {
     try {
       let entryId = action.entryId
       // Resolve temp IDs to MongoDB IDs
@@ -321,7 +405,7 @@ async function replayOfflineActions() {
         }
 
         // Resolve temp IDs in the local in-memory actions array for the current loop
-        for (const activeAction of actions) {
+        for (const activeAction of compactedActions) {
           if (activeAction.entryId === tempId) {
             activeAction.entryId = realId
           }

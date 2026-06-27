@@ -6,21 +6,21 @@ Tackle one issue at a time. Mark `[x]` when done.
 
 ## 1. 🔴 Temp ID Resolution After Sync
 
-- [ ] **Understand the problem**
+- [x] **Understand the problem**
   - When a CREATE action syncs, the server returns a real ID (e.g. `real-456`)
   - But local state and any queued follow-up actions still reference the temp ID (e.g. `temp-123`)
   - An UPDATE or DELETE queued after the CREATE will hit the server with a temp ID → **404**
 
-- [ ] **Fix: capture the real ID returned by CREATE sync**
+- [x] **Fix: capture the real ID returned by CREATE sync**
   - In `replayOfflineActions()`, after a successful CREATE, read the real ID from the response
   - Scan the remaining queue for any actions with `entryId === tempId`
   - Update them to use the real ID via `updateOfflineAction()`
 
-- [ ] **Fix: update local/UI state to replace temp ID with real ID**
+- [x] **Fix: update local/UI state to replace temp ID with real ID**
   - Emit an event or return a mapping `{ tempId → realId }` from the sync function
   - UI layer updates its list accordingly
 
-- [ ] **Test: create offline → edit offline → come online → verify sync works end to end**
+- [x] **Test: create offline → edit offline → come online → verify sync works end to end**
 
 ---
 

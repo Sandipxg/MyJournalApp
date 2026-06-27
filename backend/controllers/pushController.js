@@ -38,8 +38,8 @@ export async function subscribe(req, res) {
   // Save the subscription to the database. We use findOneAndUpdate with upsert: true
   // to prevent duplicate subscriptions if the user registers the same device twice.
   const subscription = await PushSubscription.findOneAndUpdate(
-    { userId, endpoint },
-    { keys },
+    { endpoint },
+    { userId, keys },
     { new: true, upsert: true }
   )
 

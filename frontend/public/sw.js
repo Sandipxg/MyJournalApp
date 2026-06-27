@@ -255,6 +255,21 @@ function deleteOfflineAction(id) {
 }
 
 /**
+ * Updates a processed action in the IndexedDB store.
+ */
+function updateOfflineAction(action) {
+  return openDB().then((db) => {
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(STORE_NAME, 'readwrite')
+      const store = transaction.objectStore(STORE_NAME)
+      const request = store.put(action)
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+    })
+  })
+}
+
+/**
  * Replays all queued actions to the backend in chronological order.
  */
 async function replayOfflineActions() {
@@ -290,7 +305,27 @@ async function replayOfflineActions() {
 
         const data = await response.json()
         console.log(`[Service Worker] Replay CREATE success. Temp ${action.entryId} -> Real ${data.id}`)
-        idMap.set(action.entryId, data.id)
+        
+        const tempId = action.entryId
+        const realId = data.id
+        idMap.set(tempId, realId)
+
+        // Resolve temp IDs in the remaining IndexedDB queue
+        const dbActions = await getOfflineActions()
+        for (const dbAction of dbActions) {
+          if (dbAction.entryId === tempId) {
+            dbAction.entryId = realId
+            await updateOfflineAction(dbAction)
+            console.log(`[Service Worker] Updated IndexedDB action ID ${dbAction.id}: temp ID ${tempId} resolved to ${realId}`)
+          }
+        }
+
+        // Resolve temp IDs in the local in-memory actions array for the current loop
+        for (const activeAction of actions) {
+          if (activeAction.entryId === tempId) {
+            activeAction.entryId = realId
+          }
+        }
       } 
       
       else if (action.action === 'UPDATE') {
@@ -334,7 +369,10 @@ async function replayOfflineActions() {
   // Broadcast completion message to active client tabs to refresh UI lists
   const clientList = await self.clients.matchAll()
   clientList.forEach((client) => {
-    client.postMessage({ type: 'SYNC_COMPLETE' })
+    client.postMessage({ 
+      type: 'SYNC_COMPLETE',
+      idMap: Object.fromEntries(idMap)
+    })
   })
 }
 

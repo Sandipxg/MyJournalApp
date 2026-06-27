@@ -108,7 +108,9 @@ export async function createJournal(title) {
     if (!res.ok) throw new Error('Failed to create journal')
     return await res.json()
   } catch (err) {
-    const isNetworkError = err.name === 'TypeError' || err.message === 'Failed to fetch'
+    const isNetworkError = 
+      err.name === 'TypeError' || 
+      /failed to fetch|load failed/i.test(err.message)
     if (isNetworkError) {
       console.warn('[Journal Service] Network error during CREATE, queueing offline:', err)
       return runOfflineFallback()
@@ -144,7 +146,9 @@ export async function updateJournal(id, data) {
     if (!res.ok) throw new Error('Failed to update journal')
     return await res.json()
   } catch (err) {
-    const isNetworkError = err.name === 'TypeError' || err.message === 'Failed to fetch'
+    const isNetworkError = 
+      err.name === 'TypeError' || 
+      /failed to fetch|load failed/i.test(err.message)
     if (isNetworkError) {
       console.warn('[Journal Service] Network error during UPDATE, queueing offline:', err)
       return runOfflineFallback()
@@ -178,7 +182,9 @@ export async function deleteJournal(id) {
     if (!res.ok) throw new Error('Failed to delete journal')
     return await res.json()
   } catch (err) {
-    const isNetworkError = err.name === 'TypeError' || err.message === 'Failed to fetch'
+    const isNetworkError = 
+      err.name === 'TypeError' || 
+      /failed to fetch|load failed/i.test(err.message)
     if (isNetworkError) {
       console.warn('[Journal Service] Network error during DELETE, queueing offline:', err)
       return runOfflineFallback()

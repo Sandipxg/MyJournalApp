@@ -85,7 +85,7 @@ self.addEventListener('fetch', (event) => {
       }).catch((err) => {
         console.log('[Service Worker] API network fetch failed, serving cached copy:', err)
         // If offline, serve the last cached list of journal entries
-        return caches.match(event.request)
+        return caches.match(event.request, { ignoreSearch: true })
       })
     )
     return
@@ -94,7 +94,7 @@ self.addEventListener('fetch', (event) => {
   // B. Cache-First Strategy for Frontend Static Assets (UI shell)
   if (url.startsWith(self.location.origin)) {
     event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
+      caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
         if (cachedResponse) {
           return cachedResponse // Return cached file instantly
         }
@@ -117,9 +117,9 @@ self.addEventListener('fetch', (event) => {
             const urlObj = new URL(event.request.url)
             const path = urlObj.pathname
             if (isValidAppRoute(path)) {
-              return caches.match('/') // Serve React app shell for valid routes
+              return caches.match('/', { ignoreSearch: true }) // Serve React app shell for valid routes
             }
-            return caches.match('/offline.html') // Serve static offline page for random routes
+            return caches.match('/offline.html', { ignoreSearch: true }) // Serve static offline page for random routes
           }
           throw error
         })

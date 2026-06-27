@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from "./context/AuthContext"
 import { InstallProvider, useInstall } from './context/InstallContext'
 
 import ProtectedRoute from "./components/ProtectedRoute"
+import ErrorBoundary from "./components/ErrorBoundary"
 
 const HomePage = lazy(() => import("./pages/Homepage"))
 const JournalPage = lazy(() => import("./pages/Journalpage"))
@@ -118,21 +119,23 @@ function AppLayout() {
         {/* ── Main Content ── */}
         {/* pb-24 on mobile leaves room above the bottom nav bar */}
         <main className="max-w-3xl mx-auto px-4 py-6 md:py-8 pb-24 md:pb-8">
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/journals" element={
-                <ProtectedRoute><JournalPage /></ProtectedRoute>
-              } />
-              <Route path="/journals/:id" element={
-                <ProtectedRoute><JournalDetailPage /></ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute><SettingsPage /></ProtectedRoute>
-              } />
-              <Route path="/auth" element={<LoginPage />} />
-            </Routes>
-          </Suspense>
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/journals" element={
+                  <ProtectedRoute><JournalPage /></ProtectedRoute>
+                } />
+                <Route path="/journals/:id" element={
+                  <ProtectedRoute><JournalDetailPage /></ProtectedRoute>
+                } />
+                <Route path="/settings" element={
+                  <ProtectedRoute><SettingsPage /></ProtectedRoute>
+                } />
+                <Route path="/auth" element={<LoginPage />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
         </main>
 
         {/* ── Mobile Bottom Navigation Bar — hidden on md+ ── */}

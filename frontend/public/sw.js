@@ -41,24 +41,27 @@ self.addEventListener('activate', (event) => {
 })
 
 /**
- * Helper to check if a pathname is a valid React app route.
- * Used to decide if we serve index.html or offline.html when offline.
+ * Helper to check if a request is a document navigation request.
+ * Excludes API routes and static asset files.
  */
-function isValidAppRoute(path) {
-  const cleanPath = path.split('?')[0].split('#')[0]
-  const exactRoutes = ['/', '/index.html', '/journals', '/settings', '/auth']
+function isDocumentNavigation(request) {
+  const acceptHeader = request.headers.get('accept')
+  const isHtml = acceptHeader && acceptHeader.includes('text/html')
+  const isGet = request.method === 'GET'
   
-  if (exactRoutes.includes(cleanPath)) {
-    return true
-  }
-
-  // Matches /journals/:id (a 24-character hexadecimal MongoDB ObjectId)
-  const journalDetailRegex = /^\/journals\/[a-f0-9]{24}$/
-  if (journalDetailRegex.test(cleanPath)) {
-    return true
-  }
-
-  return false
+  if (!isGet || !isHtml) return false
+  
+  const urlObj = new URL(request.url)
+  const pathname = urlObj.pathname
+  
+  // Exclude backend API routes
+  if (pathname.startsWith('/api/')) return false
+  
+  // Exclude static assets with file extensions (e.g. .js, .css, .png, .svg)
+  const fileExtensionRegex = /\.[a-z0-9]{2,4}$/i
+  if (fileExtensionRegex.test(pathname)) return false
+  
+  return true
 }
 
 // 3. Fetch Event — Intercept and route requests based on Caching Strategies
@@ -112,14 +115,8 @@ self.addEventListener('fetch', (event) => {
           return networkResponse
         }).catch((error) => {
           console.log('[Service Worker] Static fetch failed, routing fallback for document:', error)
-          // Fallback logic for document navigation requests when offline
-          if (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html')) {
-            const urlObj = new URL(event.request.url)
-            const path = urlObj.pathname
-            if (isValidAppRoute(path)) {
-              return caches.match('/') // Serve React app shell for valid routes
-            }
-            return caches.match('/offline.html') // Serve static offline page for random routes
+          if (isDocumentNavigation(event.request)) {
+            return caches.match('/', { ignoreSearch: true })
           }
           throw error
         })

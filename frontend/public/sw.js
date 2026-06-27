@@ -15,6 +15,7 @@ const ASSETS_TO_CACHE = [
 // 1. Install Event — Pre-caching core stable assets
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installed (v7)')
+  self.skipWaiting()
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Pre-caching static assets')
@@ -27,16 +28,19 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activated (v7)')
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting old cache:', cache)
-            return caches.delete(cache)
-          }
-        })
-      )
-    })
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cache) => {
+            if (cache !== CACHE_NAME) {
+              console.log('[Service Worker] Deleting old cache:', cache)
+              return caches.delete(cache)
+            }
+          })
+        )
+      })
+    ])
   )
 })
 

@@ -93,6 +93,36 @@ self.addEventListener('fetch', (event) => {
 
   // B. Cache-First Strategy for Frontend Static Assets (UI shell)
   if (url.startsWith(self.location.origin)) {
+    const isNavigation = event.request.mode === 'navigate' || (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'))
+    
+    if (isNavigation) {
+      event.respondWith(
+        fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone()
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache)
+            })
+          }
+          return networkResponse
+        }).catch((err) => {
+          console.log('[Service Worker] Navigation fetch failed, serving cache fallback:', err)
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse
+            }
+            const urlObj = new URL(event.request.url)
+            const path = urlObj.pathname
+            if (isValidAppRoute(path)) {
+              return caches.match('/')
+            }
+            return caches.match('/offline.html')
+          })
+        })
+      )
+      return
+    }
+
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {

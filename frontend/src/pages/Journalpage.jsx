@@ -22,6 +22,21 @@ function JournalPage() {
     const handleServiceWorkerMessage = (event) => {
       if (event.data && event.data.type === 'SYNC_COMPLETE') {
         console.log('[Journal Page] Background sync complete. Refreshing entries...')
+        const { idMap } = event.data
+        if (idMap && Object.keys(idMap).length > 0) {
+          setJournals(prev => prev.map(j => {
+            if (idMap[j.id]) {
+              return { ...j, id: idMap[j.id] }
+            }
+            return j
+          }))
+          setEditingJournal(prev => {
+            if (prev && idMap[prev.id]) {
+              return { ...prev, id: idMap[prev.id] }
+            }
+            return prev
+          })
+        }
         fetchJournals()
           .then(setJournals)
           .catch(err => setError(err.message))

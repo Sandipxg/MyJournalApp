@@ -15,6 +15,7 @@ const ASSETS_TO_CACHE = [
 // 1. Install Event — Pre-caching core stable assets
 self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installed (v7)')
+  self.skipWaiting()
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[Service Worker] Pre-caching static assets')
@@ -27,16 +28,19 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activated (v7)')
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting old cache:', cache)
-            return caches.delete(cache)
-          }
-        })
-      )
-    })
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cache) => {
+            if (cache !== CACHE_NAME) {
+              console.log('[Service Worker] Deleting old cache:', cache)
+              return caches.delete(cache)
+            }
+          })
+        )
+      })
+    ])
   )
 })
 
@@ -88,7 +92,7 @@ self.addEventListener('fetch', (event) => {
       }).catch((err) => {
         console.log('[Service Worker] API network fetch failed, serving cached copy:', err)
         // If offline, serve the last cached list of journal entries
-        return caches.match(event.request)
+        return caches.match(event.request, { ignoreSearch: true })
       })
     )
     return
@@ -96,8 +100,36 @@ self.addEventListener('fetch', (event) => {
 
   // B. Cache-First Strategy for Frontend Static Assets (UI shell)
   if (url.startsWith(self.location.origin)) {
+    const isNavigation = event.request.mode === 'navigate' || (event.request.headers.get('accept') && event.request.headers.get('accept').includes('text/html'))
+    
+    if (isNavigation) {
+      event.respondWith(
+        fetch(event.request).then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone()
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache)
+            })
+          }
+          return networkResponse
+        }).catch((err) => {
+          console.log('[Service Worker] Navigation fetch failed, serving cache fallback:', err)
+          return caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
+            if (cachedResponse) {
+              return cachedResponse
+            }
+            if (isDocumentNavigation(event.request)) {
+              return caches.match('/', { ignoreSearch: true })
+            }
+            return caches.match('/offline.html', { ignoreSearch: true })
+          })
+        })
+      )
+      return
+    }
+
     event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
+      caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
         if (cachedResponse) {
           return cachedResponse // Return cached file instantly
         }

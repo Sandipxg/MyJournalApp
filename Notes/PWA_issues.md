@@ -37,52 +37,52 @@ Tackle one issue at a time. Mark `[x]` when done.
   - `UPDATE → UPDATE` (same entryId) = keep only the latest UPDATE
   - `UPDATE → DELETE` (same entryId) = discard UPDATE, keep only DELETE
 
-- [ ] **Implement `compactQueue(actions)`**
+- [x] **Implement `compactQueue(actions)`**
   - Takes the raw action array
   - Returns a reduced array with redundant actions collapsed
   - Call this at the start of `replayOfflineActions()` before iterating
 
-- [ ] **Test: simulate multi-action offline sequences and verify compacted queue is correct**
+- [x] **Test: simulate multi-action offline sequences and verify compacted queue is correct**
 
 ---
 
 ## 3. 🔴 Stale App Shell Cache Lockout
 
-- [ ] **Understand the problem**
+- [x] **Understand the problem**
   - Cache-first strategy for root `/` and `/index.html` causes the browser to serve the cached file instantly without checking the network.
   - When the app is updated/deployed, users are stuck on the old `index.html` referencing old/deleted JS/CSS hashes, causing blank screens or crash-on-load.
 
-- [ ] **Fix: Implement Network-First or Stale-While-Revalidate for HTML document requests**
+- [x] **Fix: Implement Network-First or Stale-While-Revalidate for HTML document requests**
   - Update `sw.js` fetch handler to intercept document navigation requests and check network first, falling back to cache.
 
-- [ ] **Test: Modify code, redeploy, verify browser retrieves new version without manual SW unregistration.**
+- [x] **Test: Modify code, redeploy, verify browser retrieves new version without manual SW unregistration.**
 
 ---
 
 ## 4. 🔴 Duplicate Key Database Crash on Multi-User Push Subscription
 
-- [ ] **Understand the problem**
+- [x] **Understand the problem**
   - The database schema enforces `unique: true` on `endpoint`, but `pushController.js` upserts using `{ userId, endpoint }`.
   - When User B logs in on the same browser (reusing the same endpoint), the search query fails to match and tries to insert a new document, causing a MongoDB `E11000 duplicate key error`.
 
-- [ ] **Fix: Upsert by endpoint alone**
+- [x] **Fix: Upsert by endpoint alone**
   - Update `PushSubscription.findOneAndUpdate()` in the backend to query by `{ endpoint }` and set `{ userId, keys }`.
 
-- [ ] **Test: Log in as User A, register push → Log out → Log in as User B, register push → Verify no database errors.**
+- [x] **Test: Log in as User A, register push → Log out → Log in as User B, register push → Verify no database errors.**
 
 ---
 
 ## 5. 🔴 Dynamic Import (Lazy Loading Chunk) Failure Offline
 
-- [ ] **Understand the problem**
+- [x] **Understand the problem**
   - React pages are dynamically loaded using `React.lazy()`.
   - Vite splits these pages into separate JS chunks in production.
   - Since chunks are not pre-cached and only cached dynamically upon visit while online, navigating to an unvisited page while offline will throw a `ChunkLoadError` and crash the app.
 
-- [ ] **Fix: Configure asset pre-caching or build error boundary handlers**
+- [x] **Fix: Configure asset pre-caching or build error boundary handlers**
   - Automate caching of compiled assets during the build process, or implement a React Error Boundary wrapper around `<Suspense>` to recover from dynamic chunk loading errors gracefully.
 
-- [ ] **Test: Go offline, navigate to an unvisited page in settings/journals, and verify it doesn't crash the shell.**
+- [x] **Test: Go offline, navigate to an unvisited page in settings/journals, and verify it doesn't crash the shell.**
 
 ---
 
@@ -133,40 +133,40 @@ Tackle one issue at a time. Mark `[x]` when done.
 
 ## 8. 🟡 Navigation Cache-Miss for Query Parameters
 
-- [ ] **Understand the problem**
+- [x] **Understand the problem**
   - The service worker matches static resources exactly.
   - Adding parameters (e.g. `/?utm_source=homescreen` or `?code=123`) results in cache-misses offline, failing to load the PWA.
 
-- [ ] **Fix: Ignore search parameters during cache check**
+- [x] **Fix: Ignore search parameters during cache check**
   - Pass `{ ignoreSearch: true }` to `caches.match` inside the fetch interception block.
 
-- [ ] **Test: Access local app at `/?test=true` while offline and verify the app still loads successfully.**
+- [x] **Test: Access local app at `/?test=true` while offline and verify the app still loads successfully.**
 
 ---
 
 ## 9. 🟡 Service Worker Lifecycle Lock
 
-- [ ] **Understand the problem**
+- [x] **Understand the problem**
   - Service worker doesn't call `skipWaiting()` or `clients.claim()`.
   - Updated service workers stay waiting indefinitely, and `navigator.serviceWorker.controller` is `null` on first load, breaking client-to-sw `postMessage` sync triggers.
 
-- [ ] **Fix: Set skipWaiting and claim clients**
+- [x] **Fix: Set skipWaiting and claim clients**
   - Add `self.skipWaiting()` to the `'install'` listener and `self.clients.claim()` to the `'activate'` listener in `sw.js`.
 
-- [ ] **Test: Load page for the first time, verify `navigator.serviceWorker.controller` is defined and communication works immediately.**
+- [x] **Test: Load page for the first time, verify `navigator.serviceWorker.controller` is defined and communication works immediately.**
 
 ---
 
 ## 10. 🟡 Safari / iOS "Failed to fetch" Check Mismatch
 
-- [ ] **Understand the problem**
+- [x] **Understand the problem**
   - Error checking checks for `err.message === 'Failed to fetch'`, but Safari throws `"Load failed"` on network failures.
   - Safari offline actions will skip the IndexedDB fallback and throw unhandled errors to the UI (causing data loss).
 
-- [ ] **Fix: standardise network error detection**
+- [x] **Fix: standardise network error detection**
   - Update the service worker helper and fetch requests error checks to verify `err.name === 'TypeError'` or both error messages.
 
-- [ ] **Test: Simulate offline network request in Safari, verify action is successfully queued in IndexedDB.**
+- [x] **Test: Simulate offline network request in Safari, verify action is successfully queued in IndexedDB.**
 
 ---
 
@@ -197,11 +197,11 @@ Tackle one issue at a time. Mark `[x]` when done.
 
 ## 12. 🟢 Hardcoded Routes in Service Worker
 
-- [ ] **Understand the problem**
+- [x] **Understand the problem**
   - The service worker relies on a hardcoded list of valid app routes.
   - Adding new page routes requires editing `sw.js`, otherwise reloading them offline returns a generic `offline.html` fallback page.
 
-- [ ] **Fix: Match document navigation dynamically**
+- [x] **Fix: Match document navigation dynamically**
   - Modify `isValidAppRoute()` or default to fallback `/` for all document requests with `accept: text/html` headers that are not API calls or static files.
 
-- [ ] **Test: Add a mock route (e.g. `/test-page`), load it offline, and verify it correctly serves the React App Shell.**
+- [x] **Test: Add a mock route (e.g. `/test-page`), load it offline, and verify it correctly serves the React App Shell.**

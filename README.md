@@ -178,3 +178,30 @@ MyJournalApp/
    npm run dev
    ```
 5. Open the app at [http://localhost:5173/](http://localhost:5173/) or [http://localhost:5174/](http://localhost:5174/) (depending on active ports).
+
+---
+
+## 🐳 Containerization & Orchestration (Docker)
+
+The application is fully containerized and orchestrated using **Docker** and **Docker Compose**, providing a single-command setup that launches the frontend, backend, and database in an isolated virtual network with persistent volumes.
+
+### Orchestrated Services:
+1. **`journal-database` (MongoDB 6.0)**: Standard MongoDB container persisting data inside a named Docker volume (`mongo-data`). Exposes port `27017`.
+2. **`journal-backend` (Node.js / Express)**: Built from a lightweight `node:20-alpine` base image. It mounts the `./backend` source directory to allow hot-reloading and links to the database container. Exposes port `3000`.
+3. **`journal-frontend` (Vite / React 19)**: Built from `node:20-alpine`. It starts the Vite dev server with a `--host` binding to expose the client outside the container network. Exposes port `5173`.
+
+### Quickstart Container Environment:
+
+1. **Verify Environment Configuration**: Ensure your `./backend/.env` and `./frontend/.env` files are configured.
+2. **Build and Start Container Services**:
+   ```bash
+   docker-compose up --build -d
+   ```
+3. **Access Services**:
+   - **PWA Web App**: [http://localhost:5173/](http://localhost:5173/)
+   - **Express API Endpoint**: [http://localhost:3000/](http://localhost:3000/)
+   - **Swagger API Docs**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+4. **Stop Services & Delete Persistent Volumes**:
+   ```bash
+   docker-compose down -v
+   ```

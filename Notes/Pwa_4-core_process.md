@@ -17,15 +17,15 @@ Understanding what the browser does, why each event fires, and what each line of
 
 ```mermaid
 flowchart TD
-    A[Page Loaded / Registration] --> B[Install Event]
-    B -->|Pre-cache assets via waitUntil| C{skipWaiting?}
-    C -->|No| D[Waiting Phase until old SW releases]
-    C -->|Yes: self.skipWaiting| E[Activate Event]
+    A["Page Loaded / Registration"] --> B["Install Event"]
+    B -->|Pre-cache assets via waitUntil| C{"skipWaiting?"}
+    C -->|No| D["Waiting Phase until old SW releases"]
+    C -->|Yes: self.skipWaiting| E["Activate Event"]
     D --> E
-    E -->|Clean old caches via waitUntil| F{clients.claim?}
-    F -->|No| G[Control gained on NEXT reload/navigation]
-    F -->|Yes: self.clients.claim| H[Immediate Page Control]
-    G --> I[Fetch Events Intercepted]
+    E -->|Clean old caches via waitUntil| F{"clients.claim?"}
+    F -->|No| G["Control gained on NEXT reload/navigation"]
+    F -->|Yes: self.clients.claim| H["Immediate Page Control"]
+    G --> I["Fetch Events Intercepted"]
     H --> I
 ```
 
@@ -121,15 +121,15 @@ self.addEventListener('install', (event) => {
 
 ```mermaid
 flowchart TD
-    A[Browser detects new / updated worker] --> B[register('/sw.js')]
-    B --> C[install event fires]
-    C --> D[caches.open CACHE_NAME]
-    D --> E[cache.addAll ASSETS_TO_CACHE]
-    E --> F{All assets fetched successfully?}
-    F -->|Yes| G[Installation succeeds]
-    F -->|No: Promise rejects| H[Installation FAILS & worker discarded]
-    G --> I[self.skipWaiting called]
-    I --> J[Proceeds directly toward Activation]
+    A["Browser detects new / updated worker"] --> B["register('/sw.js')"]
+    B --> C["install event fires"]
+    C --> D["caches.open(CACHE_NAME)"]
+    D --> E["cache.addAll(ASSETS_TO_CACHE)"]
+    E --> F{"All assets fetched successfully?"}
+    F -->|Yes| G["Installation succeeds"]
+    F -->|No: Promise rejects| H["Installation FAILS & worker discarded"]
+    G --> I["self.skipWaiting() called"]
+    I --> J["Proceeds directly toward Activation"]
 ```
 
 ---
@@ -227,15 +227,15 @@ event.waitUntil(
 
 ```mermaid
 flowchart TD
-    A[Installation Succeeds] --> B[New Worker enters Activation]
-    B --> C[activate event dispatched]
-    C --> D[event.waitUntil Promise.all]
-    D --> E[self.clients.claim: Take control of in-scope pages]
-    D --> F[caches.keys: Inspect existing cache names]
-    F --> G{cache !== CACHE_NAME?}
-    G -->|Yes| H[caches.delete cache]
-    G -->|No| I[Retain current cache]
-    E & H & I --> J[Activation completes -> Worker is ACTIVE]
+    A["Installation Succeeds"] --> B["New Worker enters Activation"]
+    B --> C["activate event dispatched"]
+    C --> D["event.waitUntil(Promise.all)"]
+    D --> E["self.clients.claim(): Take control of in-scope pages"]
+    D --> F["caches.keys(): Inspect existing cache names"]
+    F --> G{"cache !== CACHE_NAME?"}
+    G -->|Yes| H["caches.delete(cache)"]
+    G -->|No| I["Retain current cache"]
+    E & H & I --> J["Activation completes -> Worker is ACTIVE"]
 ```
 
 ---
@@ -424,26 +424,26 @@ self.addEventListener('fetch', (event) => {
 
 ```mermaid
 flowchart TD
-    A[fetch event: GET Request] --> B{Request Category}
+    A["fetch event: GET Request"] --> B{"Request Category"}
     
-    B -->|URL contains /api/journals| C[Path A: API Request]
-    C --> C1[Strategy: Network First]
-    C1 --> C2[Try fetch from Network]
-    C2 -->|200 OK| C3[Clone response -> Cache in CACHE_NAME -> Return]
-    C2 -->|Network Rejects / Offline| C4[Fallback: caches.match event.request]
+    B -->|URL contains /api/journals| C["Path A: API Request"]
+    C --> C1["Strategy: Network First"]
+    C1 --> C2["Try fetch from Network"]
+    C2 -->|200 OK| C3["Clone response -> Cache in CACHE_NAME -> Return"]
+    C2 -->|Network Rejects / Offline| C4["Fallback: caches.match(event.request)"]
 
-    B -->|mode === 'navigate' OR text/html| D[Path B: Page Navigation]
-    D --> D1[Strategy: Network First]
-    D1 --> D2[Try fetch fresh HTML]
-    D2 -->|Success| D3[Cache HTML -> Return]
-    D2 -->|Network Rejects| D4[Fallback: Cached HTML or /offline.html]
+    B -->|mode === 'navigate' OR text/html| D["Path B: Page Navigation"]
+    D --> D1["Strategy: Network First"]
+    D1 --> D2["Try fetch fresh HTML"]
+    D2 -->|Success| D3["Cache HTML -> Return"]
+    D2 -->|Network Rejects| D4["Fallback: Cached HTML or /offline.html"]
 
-    B -->|Other same-origin resources /assets/| E[Path C: Static Resources]
-    E --> E1[Strategy: Cache First]
-    E1 --> E2[caches.match event.request]
-    E2 -->|Cache Hit| E3[Return cached response immediately]
-    E2 -->|Cache Miss| E4[Fetch from Network]
-    E4 -->|200 OK & in /assets/| E5[Clone response -> Cache -> Return]
+    B -->|Other same-origin resources /assets/| E["Path C: Static Resources"]
+    E --> E1["Strategy: Cache First"]
+    E1 --> E2["caches.match(event.request)"]
+    E2 -->|Cache Hit| E3["Return cached response immediately"]
+    E2 -->|Cache Miss| E4["Fetch from Network"]
+    E4 -->|200 OK & in /assets/| E5["Clone response -> Cache -> Return"]
 ```
 
 ---

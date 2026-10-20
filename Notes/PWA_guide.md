@@ -336,61 +336,118 @@ flowchart TD
 
 ---
 
-## 7. App Installation Experience (18.7)
+## 7. Custom PWA Installation UI (Revised Topic 1)
 
-Instead of relying on the browser's automatic and inconsistent install banners, we can build custom, premium install buttons and banners directly in our React UI.
+### Revised PWA Learning Path
+1. **Custom PWA installation UI** — `beforeinstallprompt`, `deferredPrompt`, `appinstalled`, standalone mode
+2. **PWA auditing and testing** — Lighthouse, production builds, offline testing, DevTools
+3. **Push notifications** — Permission, Push API, VAPID, backend and service worker
+4. **Scheduled reminders and cron jobs** — Timezone-aware scheduling and reliable delivery
+5. **IndexedDB fundamentals** — Databases, object stores, keys, and transactions
+6. **Offline writes and action queue** — Queueing CREATE, UPDATE, and DELETE operations
+7. **Background Sync and retries** — Sync events, failures, retry safety, and browser support
+8. **Temporary IDs and server synchronization** — Mapping local IDs to MongoDB IDs and replaying dependent actions
+9. **Merging cached reads with offline changes** — Combining Cache Storage data with pending IndexedDB mutations
 
-### The beforeinstallprompt Hook Workflow
+---
 
-The browser triggers the `beforeinstallprompt` window event when the app satisfies all PWA installation requirements.
+### Topic 1 — Custom PWA Installation UI
 
-```mermaid
-sequenceDiagram
-    participant User as User (React UI)
-    participant Browser as Browser Window
-    
-    Browser->>Browser: Check Manifest, HTTPS & SW
-    Note over Browser: If criteria met:
-    Browser->>User: Fire "beforeinstallprompt" event
-    Note over User: e.preventDefault() & save event in React State
-    User->>User: Display premium custom install button
-    User->>Browser: User clicks button -> deferredPrompt.prompt()
-    Browser->>User: Shows native prompt dialog
-    User->>Browser: User selection -> deferredPrompt.userChoice
-    Browser->>User: Fire "appinstalled" event
-    Note over User: Clear State & Hide Button
-```
+Your notes mention `beforeinstallprompt`, which is implemented in MyJournalApp across:
+- `InstallContext.jsx` — handles installation logic and state.
+- `App.jsx` — displays the custom install button.
+- `manifest.json` — provides installation metadata.
 
-### Core Code Snippets
+#### 1. What Problem Are We Solving?
+When a user opens MyJournalApp in Chrome, the browser may offer a generic install mechanism, but you want a custom button that matches your UI:
+- **Your UI**: The custom button, styling, and conditional rendering.
+- **Browser UI**: The native install confirmation dialog and install execution.
 
-#### 1. Listening and Intercepting (in Context/State)
-We prevent the default prompt and save it to state so we can trigger it when the user clicks our custom UI button.
+> [!NOTE]
+> `beforeinstallprompt` is a browser-specific event primarily supported in Chromium-based browsers. It will not fire on every browser or device.
+
+#### 2. Step 1: Listen for `beforeinstallprompt`
+In `InstallContext.jsx`:
 ```javascript
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault() // Stop default mini-infobar
-  setDeferredPrompt(e) // Store event
-  setIsInstallable(true) // Show custom install UI
-})
+const handleBeforeInstallPrompt = (e) => {
+  e.preventDefault()
+  setDeferredPrompt(e)
+  setIsInstallable(true)
+}
+
+window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+```
+- `e.preventDefault()`: Prevents the browser's default mini-infobar handling.
+- `setDeferredPrompt(e)`: Saves the live event object in React state (do not serialize or save to `localStorage`).
+- `setIsInstallable(true)`: Triggers the display of your custom UI button.
+
+#### 3. Step 2: User Clicks "Install App"
+In `App.jsx`:
+```jsx
+{isInstallable && !isInstalled && (
+  <button onClick={install}>Install App</button>
+)}
 ```
 
-#### 2. Triggering the Install Dialog
-When the user clicks the custom install button, we prompt them and await their decision.
+In `InstallContext.jsx`:
 ```javascript
 const install = async () => {
-  if (!deferredPrompt) return
-  deferredPrompt.prompt() // Show browser dialog
+  if (!deferredPrompt) {
+    return false
+  }
+  deferredPrompt.prompt()
   const { outcome } = await deferredPrompt.userChoice
   setDeferredPrompt(null)
   setIsInstallable(false)
   return outcome === 'accepted'
 }
 ```
+1. Verify `deferredPrompt` exists.
+2. Call `deferredPrompt.prompt()` to request the native dialog.
+3. Await `deferredPrompt.userChoice` (`accepted` or `dismissed`).
+4. Clear the event (the prompt event can only be used once).
+5. Hide the custom button.
 
-#### 3. Detecting Standalone Mode
-To hide installation elements if the app is already installed and opened as a standalone window:
+#### 4. Step 3: Detect App Installation
+In `InstallContext.jsx`:
 ```javascript
-const isInstalled = window.matchMedia('(display-mode: standalone)').matches
+const handleAppInstalled = () => {
+  setDeferredPrompt(null)
+  setIsInstallable(false)
+  setIsInstalled(true)
+  console.log('[PWA] Installed successfully')
+}
+
+window.addEventListener('appinstalled', handleAppInstalled)
 ```
+The browser fires `appinstalled` when installation completes. This confirms the app was installed, whereas `userChoice` only indicates the dialog selection.
+
+#### 5. Step 4: Detect Standalone Mode
+In `InstallContext.jsx`:
+```javascript
+const [isInstalled, setIsInstalled] = useState(() => {
+  if (typeof window === 'undefined') return false
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true
+  )
+})
+```
+- `matchMedia('(display-mode: standalone)')`: Checks if currently launched in standalone display mode.
+- `navigator.standalone`: Legacy iOS Safari check.
+- Updates via media query listener if display mode changes dynamically.
+
+#### 6. Architecture Overview
+- **`InstallContext.jsx`**: Tracks installation state, listens to browser events, and exposes `install()`.
+- **React Context**: Exposes `isInstallable`, `isInstalled`, and `install` via `useInstall()`.
+- **Install button (`App.jsx`)**: Renders conditionally when installable and not installed.
+- **Browser Native Dialog**: Handles actual system-level installation.
+
+#### 7. Key Takeaway: `outcome` Values
+When a user clicks your custom button and then closes/rejects the native prompt:
+- `outcome` returns `'dismissed'`.
+- If the user confirms: `outcome` returns `'accepted'`.
+- The custom button hides after either outcome unless a fresh `beforeinstallprompt` event fires or a retry strategy is implemented.
 
 ---
 
@@ -407,104 +464,147 @@ For Lighthouse to pass the PWA installability audit, the page must:
 
 ---
 
-## 9. Push Notifications in Depth (18.9)
+## 9. Push Notifications in Depth (Revised Topic 3)
 
-Push notifications are sent from your server to the browser, allowing you to re-engage users even if the app tab or browser is closed.
+### Topic 3 of 9: Push Notifications 🔔
 
-### The 2 Sets of Cryptographic Keys
-* **VAPID Keys (Server Identity):** Proves to Google/Mozilla's Push Service who sent the message. Stored as a Public/Private keypair.
-* **Subscription Keys (Message Encryption):** Generated by the browser (`p256dh` and `auth`). Encrypts the payload end-to-end so Google/Mozilla cannot read it.
+Push notifications solve the challenge of letting your Node.js backend notify the user's browser even when the React application is completely closed.
 
-```mermaid
-flowchart TD
-    subgraph Backend Server
-        Vapid[Sign headers with VAPID Private Key]
-        Encrypt[Encrypt payload with Browser p256dh Key]
-    end
-    
-    subgraph Push Service
-        Google[Google / Mozilla Servers]
-        Verify[Verify VAPID Public Key Signature]
-    end
-    
-    Backend Server -->|POST with VAPID JWT Header & Encrypted Blob| Google
-    Google --> Verify
-    Verify -->|Matches? Forward Encrypted Blob| Device[Client Browser / Device]
-    Device -->|Decrypts using local Private Key| SW[Service Worker displays notification]
-```
+#### 1. Architecture Overview
+1. **Node.js Backend**: Decides when to dispatch a notification and encrypts the payload.
+2. **Browser Push Service** (e.g., FCM / Mozilla): Routes the encrypted message to the specific browser installation.
+3. **Service Worker (`sw.js`)**: Background event listener that receives the `push` event and displays the notification.
+4. **User Interaction**: Sees the system notification; clicking it focuses or opens the app at `/journals`.
 
-### The Step-by-Step Notification Flow
+> [!NOTE]
+> - **Push Notification**: Server sends a message to the browser via Push Service.
+> - **Local Notification**: Frontend script directly requests the browser to display a banner.
+> - **Service Worker**: The background proxy thread that receives push events when pages are closed.
 
-#### Phase 1: Requesting Permission (Client-Side)
-We ask the user for permission. The browser displays a native permissions dialog.
+---
+
+#### 2. Subscription Flow: How Does the Browser Know Where to Deliver?
+Implemented in `frontend/src/services/pushService.js`:
+
+##### Step A: Check Browser Support
 ```javascript
-const result = await Notification.requestPermission()
-// result is 'granted', 'denied', or 'default'
+if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+  throw new Error('Push notifications are not supported in this browser')
+}
 ```
 
-#### Phase 2: Generating the Subscription (Client-Side)
-If granted, we fetch the server's public VAPID key, and subscribe through the browser's Service Worker `PushManager`.
+##### Step B: Wait for Service Worker Registration
 ```javascript
 const registration = await navigator.serviceWorker.ready
-const subscription = await registration.pushManager.subscribe({
-  userVisibleOnly: true, // Required for privacy rules
-  applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+```
+
+##### Step C: Create Push Subscription
+```javascript
+let subscription = await registration.pushManager.getSubscription()
+
+if (!subscription) {
+  subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: convertedKey
+  })
+}
+```
+The browser generates a subscription object:
+```json
+{
+  "endpoint": "https://push-service.example/...",
+  "keys": {
+    "p256dh": "...",
+    "auth": "..."
+  }
+}
+```
+- **`endpoint`**: Unique delivery address on the vendor push server for this browser instance.
+- **`p256dh` & `auth`**: Cryptographic keys used by Web Push protocol for payload encryption.
+- **`userVisibleOnly: true`**: Required privacy guarantee ensuring every push results in a visible notification.
+
+##### Step D: Persist Subscription in MongoDB
+```javascript
+fetch(`${BASE_URL}/subscribe`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(subscription),
+  credentials: 'include'
 })
 ```
-*The result is a subscription object containing the unique endpoint URL and client cryptographic keys (`p256dh`, `auth`).*
+The backend `pushController.js` upserts this subscription into the `PushSubscription` collection linked to `userId`.
 
-#### Phase 3: Storing Subscription on Backend (Server-Side)
-The frontend sends the subscription object via `POST` to the backend. The backend updates or inserts the subscription in MongoDB, associated with the user's `userId`.
+---
+
+#### 3. VAPID Keys (Voluntary Application Server Identification)
+Configured in `backend/controllers/pushController.js`:
 ```javascript
-await PushSubscription.findOneAndUpdate(
-  { userId, endpoint },
-  { keys },
-  { upsert: true }
+webpush.setVapidDetails(
+  'mailto:...',
+  process.env.VAPID_PUBLIC_KEY,
+  process.env.VAPID_PRIVATE_KEY
 )
 ```
+- **Public VAPID Key**: Fetched by frontend (`/api/push/vapid-public-key`) to create browser subscriptions.
+- **Private VAPID Key**: Kept secret on backend (`.env`). Authenticates outgoing push requests to push servers.
+- *Distinction*: VAPID authenticates server identity; subscription keys (`p256dh`, `auth`) encrypt the message content.
 
-#### Phase 4: Sending the Push (Server-Side)
-When triggering a notification, the server retrieves active subscriptions, encrypts the payload, signs the VAPID headers, and sends it to the vendor endpoint.
-```javascript
-const payload = JSON.stringify({ title: 'Reminder', body: 'Time to write!' })
-await webpush.sendNotification(subscription, payload)
-```
-*Note: If the Push Service returns status `410` (Gone) or `404` (Not Found), the backend immediately deletes the expired subscription from MongoDB.*
+---
 
-#### Phase 5: Receiving the Push (Client-Side SW)
-The browser receives the push message, wakes up the Service Worker in the background, fires a `push` event, decrypts the message, and displays the banner.
-```javascript
-self.addEventListener('push', (event) => {
-  const data = event.data.json()
-  event.waitUntil(
-    self.registration.showNotification(data.title, {
-      body: data.body,
-      data: { url: data.url }
-    })
-  )
-})
-```
+#### 4. Real Notification Trace: Test Notification Journey
+1. **Frontend Request**: `triggerTestPush()` calls `POST /api/push/send`.
+2. **Backend Subscription Lookup**: `PushSubscription.find({ userId })` retrieves all device subscriptions for the user.
+3. **Backend Push Dispatch**: `webpush.sendNotification(...)` sends the encrypted payload (`Journal Reminder! ✍️`, `/journals`) to each endpoint.
+4. **Service Worker Intercept**: Browser wakes `sw.js` and fires the `push` event.
+5. **Notification Display**:
+   ```javascript
+   self.addEventListener('push', (event) => {
+     let data = { title: 'Journal App', body: 'You have a new message!', url: '/' }
+     if (event.data) {
+       data = event.data.json()
+     }
+     event.waitUntil(
+       self.registration.showNotification(data.title, {
+         body: data.body,
+         icon: '/icons/icon-192.png',
+         data: { url: data.url || '/' }
+       })
+     )
+   })
+   ```
+   - **`event.waitUntil()`**: Extends the Service Worker's active lifecycle until the promise resolves, preventing premature termination by the browser.
+6. **Notification Click**:
+   ```javascript
+   self.addEventListener('notificationclick', (event) => {
+     event.notification.close()
+     const targetUrl = event.notification.data.url
+     event.waitUntil(
+       clients.matchAll({ type: 'window', includeUncontrolled: true })
+         .then((clientList) => {
+           for (const client of clientList) {
+             if (client.url.includes(self.location.origin)) {
+               client.focus()
+               return client.navigate(targetUrl)
+             }
+           }
+           return clients.openWindow(targetUrl)
+         })
+     )
+   })
+   ```
 
-#### Phase 6: Clicking the Notification (Client-Side SW)
-When the user clicks the notification, the Service Worker intercepts the action, closes the card, and searches for an open window tab of the app to focus, or opens a new tab.
-```javascript
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close()
-  const targetUrl = event.notification.data.url
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true })
-      .then((clientList) => {
-        for (const client of clientList) {
-          if (client.url.includes(self.location.origin)) {
-            client.focus()
-            return client.navigate(targetUrl)
-          }
-        }
-        return clients.openWindow(targetUrl)
-      })
-  )
-})
-```
+---
+
+#### 5. Check Your Understanding
+- **Q1: Your React app is completely closed. What makes it possible for a push notification to appear?**
+  - *Answer*: The browser's push service delivers the message, and the operating system wakes the service worker to handle the `push` event.
+- **Q2: Why does your backend store the push subscription in MongoDB?**
+  - *Answer*: To store each browser's delivery endpoint and cryptographic keys (`p256dh`, `auth`) for future push dispatches.
+- **Q3: Which VAPID key must remain secret?**
+  - *Answer*: The private key (`VAPID_PRIVATE_KEY`).
+
+---
+
 
 > [!WARNING]
 > ### ❓ Push Notification Doubts & Solutions
@@ -543,48 +643,218 @@ self.addEventListener('notificationclick', (event) => {
 
 ---
 
-## 10. Scheduled Daily Reminders & Cron Jobs
+## 10. Scheduled Reminders and Cron Jobs (Revised Topic 4)
 
-When implementing PWA notifications, we cannot run timers in the client-side Service Worker because the browser shuts it down to save battery. Therefore, daily scheduling must be handled on the backend.
+### Topic 4 of 9: Scheduled Reminders and Cron Jobs ⏰
 
-### Cron Jobs in Node.js
-
- we use `node-cron` to schedule tasks on the server using standard cron syntax:
-`* * * * *` (Minute, Hour, Day of Month, Month, Day of Week).
-
-### Timezone-Aware Scheduling Flow
-
-To ensure that the user receives their reminder at their custom local time (e.g. 9:30 PM local time), we:
-1. **Detect Timezone:** The React frontend automatically fetches the device's IANA timezone name:
-   ```javascript
-   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-   ```
-2. **Store Preferences:** This timezone and the chosen `reminderTime` (e.g. `"21:30"`) are sent to the backend and saved in the `User` MongoDB model.
-3. **Scan Every Minute:** The server runs a background cron job that executes at the start of every minute.
-4. **Compare Time:** For every active user, the server formats the current UTC clock time into the user's specific local timezone and compares it to their preference:
-   ```javascript
-   const formatter = new Intl.DateTimeFormat('en-US', {
-     timeZone: user.timezone || 'UTC',
-     hour: '2-digit',
-     minute: '2-digit',
-     hour12: false
-   })
-   const parts = formatter.formatToParts(new Date())
-   const hour = parts.find(p => p.type === 'hour').value
-   const minute = parts.find(p => p.type === 'minute').value
-   const userLocalTime = `${hour}:${minute}` // Matches "HH:MM"
-   ```
-5. **Send Notification:** If the times match, the server fetches the user's push subscriptions and dispatches the notification.
+While the push notification system handles delivery, the cron job decides **when** delivery should be triggered. Because browsers throttle or terminate inactive background threads to conserve battery, client-side timers cannot be relied upon; scheduling must run on the backend.
 
 ---
 
-## 11. Offline Writes & Background Sync (18.10)
+#### 1. Configuration Scenario & Data Model
+When a user sets a daily journal reminder for 8:30 PM, the backend persists their timing preference in MongoDB:
+```json
+{
+  "reminderTime": "20:30",
+  "timezone": "Asia/Kolkata"
+}
+```
 
-To make a Progressive Web App truly useful offline, users must be able to perform write operations (create, update, and delete entries) without internet connectivity. These actions are queued locally and automatically replayed to the server when connection returns.
+The system separates scheduling criteria from delivery endpoints across two collections:
 
-### IndexedDB vs. LocalStorage
+| Data | Stored In | Purpose |
+| :--- | :--- | :--- |
+| `reminderTime` & `timezone` | `backend/models/userModel.js` (`User`) | **When** to trigger the reminder |
+| `endpoint` & `keys` (`p256dh`, `auth`) | `backend/models/pushSubscriptionModel.js` (`PushSubscription`) | **Where** to deliver the notification |
 
-For rich offline applications, we use **IndexedDB** instead of `localStorage` because it is transactional, asynchronous (doesn't block the UI thread), handles large amounts of data, and supports structured objects natively without serialization.
+---
+
+#### 2. What Is a Cron Job?
+A cron job is an automated task scheduled to run at specific recurring intervals. In Node.js, we use the `node-cron` package:
+```javascript
+cron.schedule('* * * * *', async () => {
+  // Executes once every minute
+})
+```
+
+##### Minute-by-Minute Evaluation Flow:
+- **8:28 PM**: Cron runs $\rightarrow$ Current local time (`20:28`) $\neq$ user preference (`20:30`) $\rightarrow$ **Skip**.
+- **8:29 PM**: Cron runs $\rightarrow$ Current local time (`20:29`) $\neq$ user preference (`20:30`) $\rightarrow$ **Skip**.
+- **8:30 PM**: Cron runs $\rightarrow$ Current local time (`20:30`) matches $\rightarrow$ **Trigger push delivery**.
+- **8:31 PM**: Cron runs $\rightarrow$ Current local time (`20:31`) $\neq$ user preference (`20:30`) $\rightarrow$ **Skip**.
+
+---
+
+#### 3. Code Execution Trace (`cronService.js`)
+
+##### Step A: Initialize the Scheduler
+In `backend/server.js`, the scheduler starts right after establishing the database connection:
+```javascript
+await connectDb()
+initScheduler()
+```
+The scheduler runs entirely as a background Node.js process independently of any open browser sessions.
+
+##### Step B: Query Active Reminder Users
+Every minute, the worker queries MongoDB for users with configured reminders:
+```javascript
+const activeUsers = await User.find({
+  reminderTime: { $ne: null }
+})
+```
+
+##### Step C: Timezone Conversion
+To guarantee delivery at the user's local wall-clock time regardless of the server's UTC hosting location:
+```javascript
+const formatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: user.timezone || 'UTC',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false
+})
+const parts = formatter.formatToParts(new Date())
+const hour = parts.find(p => p.type === 'hour').value
+const minute = parts.find(p => p.type === 'minute').value
+const userLocalTime = `${hour}:${minute}` // Evaluates to "20:30"
+```
+
+##### Step D: Triggering the Push Flow
+```javascript
+if (userLocalTime === user.reminderTime) {
+  await sendReminderToUser(user._id)
+}
+```
+- **Test button**: Manually invoked via user action calling `POST /api/push/send`.
+- **Scheduled reminder**: Automatically dispatched by `cronService.js` calling `sendReminderToUser()`.
+Both paths dispatch encrypted payloads via `webpush.sendNotification()` to the client service worker.
+
+---
+
+#### 4. Production Implementation Considerations
+1. **Duplicate Prevention & Cluster Safety**:
+   - The current check compares only the string hour and minute (`20:30`).
+   - If multiple server instances or containers run the same cron job, the user could receive duplicate notifications during that matching minute window.
+   - *Solution*: Store a `lastReminderSentAt` timestamp or use distributed locking (e.g. Redis / BullMQ) to ensure idempotency.
+2. **Asynchronous Dispatching**:
+   - Using `subscriptions.forEach(async (sub) => ...)` does not await the resolution of inner async calls.
+   - *Solution*: Use `await Promise.all(subscriptions.map(sub => ...))` to handle completion, capture delivery failures (such as `410 Gone`), and guarantee predictable error handling.
+
+---
+
+#### 5. Quick Knowledge Check
+- **Question**: Suppose a user has `reminderTime: "20:30"` and `timezone: "Asia/Kolkata"`. What happens when the cron job executes at 20:29 in that user's local timezone?
+- **Answer**: The scheduler skips the user because `userLocalTime` (`"20:29"`) does not match the configured `reminderTime` (`"20:30"`).
+
+---
+
+## 11. Offline Storage & Synchronization (Revised Topics 5–9)
+
+### Topic 5 of 9: IndexedDB Fundamentals 🗄️
+
+In MyJournalApp, data exists across three distinct layers:
+1. **MongoDB**: Backend persistent database (users, journal entries).
+2. **Cache Storage API**: Browser storage for HTTP responses and static assets (`index.html`, bundles, icons) enabling offline boot.
+3. **IndexedDB**: Browser-embedded NoSQL database for structured data and queued offline mutations.
+
+```mermaid
+flowchart TD
+    UserBrowser[User's Browser / Device]
+    subgraph ClientStorage[Client Storage]
+        Cache[Cache Storage API: Cached GET assets, HTML/JS/CSS]
+        IDB[(IndexedDB: journal-offline-db - Queued Action Objects)]
+    end
+    subgraph ServerSide[Server Side]
+        Mongo[(MongoDB: Central User & Journal Documents)]
+    end
+
+    UserBrowser --> Cache
+    UserBrowser --> IDB
+    IDB -.->|Replayed via Service Worker when Online| Mongo
+```
+
+---
+
+#### 1. IndexedDB vs. MongoDB
+
+| Feature | IndexedDB | MongoDB |
+| :--- | :--- | :--- |
+| **Location** | User's browser / device | Backend database server |
+| **Access** | Browser scripts & Service Worker | Backend Express controllers |
+| **Offline Operation** | Full read & write capability offline | Requires active internet connectivity |
+| **Role in App** | Temporary queue for offline actions (`offline-actions`) | Central authority for persistent journal records |
+
+> [!IMPORTANT]
+> Writing to IndexedDB **does not** automatically sync with MongoDB. The application must explicitly read and replay queued actions to the backend when online.
+
+---
+
+#### 2. Database Initialization in `frontend/public/sw.js`
+Your Service Worker configures the database schema:
+```javascript
+const DB_NAME = 'journal-offline-db'
+const DB_VERSION = 1
+const STORE_NAME = 'offline-actions'
+
+const request = indexedDB.open(DB_NAME, DB_VERSION)
+
+request.onupgradeneeded = (event) => {
+  const db = event.target.result
+  if (!db.objectStoreNames.contains(STORE_NAME)) {
+    db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true })
+  }
+}
+```
+- **`DB_NAME`**: Unique database identifier per origin.
+- **`DB_VERSION`**: Schema version number. Triggering an upgrade (incrementing version) runs `onupgradeneeded`.
+- **`STORE_NAME` (`object store`)**: The collection holding records.
+- **`keyPath: 'id'` with `autoIncrement: true`**: Automatically assigns unique auto-incrementing integer IDs to records.
+
+---
+
+#### 3. Queued Action Record Schema
+When an offline journal is created, an action descriptor is saved to `offline-actions`:
+```json
+{
+  "id": 1,
+  "entryId": "temp-abc123",
+  "action": "CREATE",
+  "payload": {
+    "title": "My first offline journal"
+  }
+}
+```
+- `action`: Denotes the intended REST operation (`CREATE`, `UPDATE`, `DELETE`).
+- `entryId`: A local temporary ID allowing the UI to reference the entry before MongoDB assigns a permanent `_id`.
+
+---
+
+#### 4. Transaction Modes: Reading vs. Writing
+All IndexedDB interactions require transactions:
+
+##### Read-Only Transaction (Retrieving Queued Actions)
+```javascript
+const transaction = db.transaction('offline-actions', 'readonly')
+const store = transaction.objectStore('offline-actions')
+const request = store.getAll()
+```
+
+##### Read-Write Transaction (Removing Processed Actions)
+```javascript
+const transaction = db.transaction('offline-actions', 'readwrite')
+const store = transaction.objectStore('offline-actions')
+const request = store.delete(id)
+```
+
+> [!WARNING]
+> Browser storage can be cleared by users or evicted by the operating system under low disk space. IndexedDB provides resilient local buffering, but it is not a permanent substitute for server synchronization.
+
+---
+
+#### 5. Quick Knowledge Check
+- **Question**: A user creates a journal entry while offline. Your app saves the action in IndexedDB. Has the entry been saved to MongoDB yet?
+- **Answer**: **No.** The action is only saved locally in the browser's IndexedDB. The Service Worker must replay the action to the backend once connectivity returns.
+
+---
 
 ### The Offline Action Queue Pattern
 
